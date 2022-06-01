@@ -1,0 +1,590 @@
+---
+title: "Identifying dispersal jump from spatial occurrence data"
+author: 
+- Nadege Belouard^[Temple University, nadege.belouard@temple.edu]
+- Sebastiona De Bona^[Temple University, seba.debona@temple.edu]
+- Jocelyn E. Behm^[Temple University, jebehm@temple.edu]
+- Matthew R. Helmus^[Temple University, mrhelmus@temple.edu]
+date: "1/6/2021"
+output:
+  pdf_document:
+    toc: TRUE
+    toc_depth: 2
+  html_document:
+    toc: TRUE
+    toc_depth: 3
+params:
+  display: FALSE
+  run: TRUE
+  loadfiles: FALSE
+  savefiles: TRUE
+editor_options: 
+  chunk_output_type: console
+---
+
+# Aim and setup
+
+The aim of this first vignette is to differentiate diffusive spread from jump dispersal using a simple and conservative method. 
+
+
+```{r setup for rendering, include = F, messages = F, warning = F}
+# First we set parameters and install all the necessary packages
+knitr::opts_chunk$set(dpi = 300, warning = FALSE, message = FALSE, echo = FALSE)
+
+# attaching necessary packages
+library(tidyverse)
+library(magrittr)
+library(sf)
+library(maps)
+library(DescTools)
+# library(reshape2)
+library(geosphere)
+library(ggplot2)
+library(knitr)
+library(here)
+library(jumpID)
+library(purrr)
+library(leaflet)
+
+sf::sf_use_s2(FALSE)
+
+load(file.path(here(), "data", "dataset.Rda"))
+head(dataset)
+dataset %<>% mutate(sp_established = ifelse(status == "negatives", FALSE, TRUE))
+```
+
+
+# 1. Data initialization
+
+## Data reshaping
+
+We reshape the table to summarize the information by rounding the geographical coordinates to cells of 1 km^2 (1 km * 1 km), so that one line represents the detection status at a given location for a given year. The code is borrowed from Seba De Bona's `lycordata` vignette to homogenize our data.
+
+Note: when several surveys indicate that SLF are "present" the same year at the same location, we could be tempted to categorize them in the "established" category. However, the category "present" often refers to dead individuals, although this information is not explicitly available. We use a conservative approach and kept the same categories while summarizing the data.
+
+```{r rounding coordinates, echo = params$display, warnings = FALSE, message = FALSE, eval = params$run}
+# specifying the width of the mesh, in km
+size_of_grid <- 1
+
+# rounding coordinates and summarizing surveys by location and year
+# we round the latitude and longitude to 5 decimal places to avoid problems of memory limitations
+#this is ok because the size of the grid is 0.009 (1/111) at the smallest (3 decimal places)
+grid_data <- dataset %>%
+  mutate(latitude_grid = RoundTo(latitude, multiple = size_of_grid/111),
+         longitude_grid = RoundTo(longitude, multiple = size_of_grid/85)) %>%
+  mutate(latitude_rounded = round(latitude_grid, 5),
+         longitude_rounded = round(longitude_grid, 5)) %>% 
+  group_by(bio_year, latitude_rounded, longitude_rounded) %>%
+  summarise(sp_established = any(sp_established)) %>% 
+  ungroup()
+
+knitr::kable(head(grid_data))
+dim(grid_data)
+```
+
+
+Let's look at the points on a map
+```{r show points}
+# extracts a map of the States and recodes state labels to show the two-letter code rather than the full state name.
+
+# obtaining simple feature objects for states and finding centroids for label positioning
+states <- sf::st_as_sf(maps::map("state", plot = FALSE, fill = TRUE))
+# sf::st_as_sf(maps::map("county", plot = TRUE, fill = FALSE))
+states <- cbind(states, st_coordinates(st_centroid(states)))
+
+# making table key for state 2-letter abbreviations
+# the vectors state.abb and state.name contains strings of all
+# US states and abbreviations
+state_abbr <- tibble(state.name = str_to_lower(state.name), state.abb) %>%
+  left_join(tibble(ID = states$ID), ., by = c(ID = "state.name")) %>%
+  mutate(state.abb = replace_na(state.abb, ""))
+
+# adding 2-letter codes to sf
+states$code <- state_abbr$state.abb
+
+
+
+
+grid_data$sp_established <- factor(grid_data$sp_established, levels = c("FALSE", "TRUE"))
+
+
+# Visualize points
+ggplot(data = states, fill = "white") +
+  geom_sf() +
+  geom_point(data = grid_data, aes(x = longitude_rounded, y = latitude_rounded, col = sp_established)) +
+  labs(x = "Longitude", y = "Latitude") +
+  geom_text(data = states,
+            aes(X, Y, label = code), size = 4) +
+  coord_sf(xlim = c(-88, -82), ylim = c(38, 43))
+
+```
+
+
+
+## Distances and status calculation
+
+```{r calculate distances to the introduction point, echo = params$display, eval = params$run}
+
+#Coordinates of the introduction site, extracted from Barringer et al. 2015
+centroid <- data.frame(longitude_rounded = mean(grid_data$longitude_rounded),
+                       latitude_rounded = mean(grid_data$latitude_rounded))
+
+#Compute distances to the introduction point, in km
+grid_data <- grid_data %>% 
+  mutate(DistToIntro = distm(cbind(longitude = grid_data$longitude_rounded, latitude = grid_data$latitude_rounded), 
+                             centroid, fun=distGeo)/1000)
+
+```
+
+\newpage
+
+
+
+
+
+
+# 2. Differentiating diffusive spread and jump dispersal
+
+A custom program searches for each year the distance at which the gap occurs, and returns both the survey before this threshold (the limit of diffusive spread) and a list of surveys found after this threshold (jump events).   
+* Note that here, we consider that populations do not go extinct, so that the limit of the diffusive spread cannot be lower in year y than in year y+1. This is because fewer and fewer surveys are conducted near the introduction site over time, leading to the appearance of a false first gap near the introduction site (see Figure 3, surveys are shifted on the right in 2019 and 2020).  
+* If a jump event is identified closer than 10 miles to a jump from the previous year, it is removed from the list, as SLF likely spread from the jump of the previous year.
+* The function runs independently for each disk portion, generating false-positive and false-negative (see troubleshooting with disk rotation).
+
+We divide the invasion records into sectors to increase the accuracy of subsequent calculations.
+
+
+## Parameters optimization
+
+Now we need to figure out the best set of parameters to find the accurate number of jumps, i.e. the highest number of jumps detected by the algorithm. To do so, we run several analysis with extreme sets of parameters to get closer to a plateau in the number of jumps that are found, before a finer optimization is done.
+
+The parameter that increases most the number of jumps is the number of sectors, so we begin with this parameter and a fixed (high) number of rotations, and look for a plateau.
+
+```{r first approximation of the number of sectors}
+
+# First iteration:
+i = 4
+initial_number_rotations = 10
+Results_prev = -1
+centroid <- c(mean(grid_data$longitude_rounded), mean(grid_data$latitude_rounded))
+unique(dataset$bio_year)
+
+# Attribute the geographical sector of each point for each rotation
+spdata <- attribute_sectors(grid_data, nb_sectors = i, centroid = centroid, rotation = initial_number_rotations)
+
+spdata_long <- spdata %>% 
+  pivot_longer(cols = starts_with("rotation"), names_to = "rotation_nb", values_to = "sectors_nb", 
+               names_prefix = "rotation", names_transform = list(rotation_nb = as.integer))
+
+# Find the jumps
+Results <- find_jumps(spdata_long, gap_size = 10, bio_year = c(2012:2015))
+dim(Results$Jump)
+
+# Run the loop to find the approximate number of sectors recommended
+while (dim(Results$Jump)[1] > Results_prev){
+  Results_prev <- dim(Results$Jump)[1]
+  j = i
+  i = i + 4
+
+  slfdata <- attribute_sectors(grid_data, nb_sectors = i, centroid = centroid, rotation = initial_number_rotations)
+  slfdata_long <- slfdata %>% 
+    pivot_longer(cols = starts_with("rotation"), names_to = "rotation_nb", values_to = "sectors_nb", 
+                 names_prefix = "rotation", names_transform = list(rotation_nb = as.integer)) 
+  
+  Results <- find_jumps(spdata_long, gap_size = 10, bio_year = c(2012:2015))
+  
+  rm(slfdata)
+  rm(slfdata_long)
+}
+
+print(paste0("The right number of sectors is likely between ", j, " and ", i))
+
+rm(Results)
+```
+
+The right number of sectors is close to 4-8.
+
+```{r first approximation of the number of rotations}
+# Then, look at the number of rotations needed
+# Run this on the highest number of sectors found above (i).
+r = 1
+Results_prev = -1
+
+spdata <- attribute_sectors(grid_data, nb_sectors = i, centroid = centroid, rotation = r)
+spdata_long <- spdata %>% 
+  pivot_longer(cols = starts_with("rotation"), names_to = "rotation_nb", values_to = "sectors_nb", 
+               names_prefix = "rotation", names_transform = list(rotation_nb = as.integer)) 
+Results <- find_jumps(spdata_long, gap_size = 10, bio_year = c(2012:2015))
+
+
+while (dim(Results$Jump)[1] > Results_prev){
+  Results_prev <- dim(Results$Jump)[1]
+  k = r
+  r = r + 2
+
+  spdata <- attribute_sectors(grid_data, nb_sectors = i, centroid = centroid, rotation = r)
+  spdata_long <- spdata %>% 
+  pivot_longer(cols = starts_with("rotation"), names_to = "rotation_nb", 
+               values_to = "sectors_nb", names_prefix = "rotation", names_transform = list(rotation_nb = as.integer)) 
+  Results <- find_jumps(spdata_long, gap_size = 15, bio_year = c(2014:2020))
+  
+  rm(spdata)
+  rm(spdata_long)
+
+}
+
+print(paste0("The number of rotations is likely between ", k, " and ", r))
+```
+
+The number of rotations is close to 1-3.
+Use these approximations to run the optimization program!
+
+```{r run optimization}
+# Here we are going to run the number of sectors of every multiple of 4 between 20 and 32
+# and the number of rotations between 1 and 10
+
+sectors = c(4,8)
+rotations = c(1, 2, 3)
+centroid <- c(mean(grid_data$longitude_rounded), mean(grid_data$latitude_rounded))
+  
+optim_list <- data.frame(s = NULL,
+                         r = NULL,
+                         DistToIntro = NULL,
+                         bio_year = NULL,
+                         latitude_rounded = NULL,
+                         longitude_rounded = NULL,
+                         sp_established = NULL,
+                         theta = NULL,
+                         DistTosp = NULL)
+
+
+for (s in sectors){
+  for (r in rotations){
+    i = 1
+    print(paste0("Sectors: ", s, ", rotations: ", r))
+    spdata <- attribute_sectors(grid_data, nb_sectors = s, centroid = centroid, rotation = r)
+    spdata_long <- spdata %>% 
+      pivot_longer(cols = starts_with("rotation"), names_to = "rotation_nb", 
+                   values_to = "sectors_nb", names_prefix = "rotation", 
+                   names_transform = list(rotation_nb = as.integer)) 
+    Results <- find_jumps(spdata_long, gap_size = 10, bio_year = c(2012:2015))
+    Results$Jump %<>% add_column(r = r, s = s)
+    optim_list <- rbind(optim_list, Results$Jump)
+    i = i + 1
+    
+    rm(spdata)
+    rm(spdata_long)
+  }
+}
+
+# List of jumps
+head(optim_list)
+
+# List of the number of jumps found per combination
+optim_sum <- optim_list %>% group_by(s, r) %>% summarise(jumps = n())
+head(optim_sum)
+max(optim_sum$jumps)
+
+
+# write.csv(optim_sum, file.path(here(), "tables", "optim_jumps.csv"))
+
+```
+
+
+Plot the optimization
+
+```{r plot optimization}
+
+# Plot it
+optim_plot <- ggplot(data = optim_sum, 
+                     aes(x = as.factor(r), y = jumps)) +
+  geom_bar(lwd = .05, stat = "identity") +
+  xlab("Number of rotations") +
+  ylab("Number of jumps") +
+  facet_wrap(~as.factor(s), nrow = 1) +
+  theme_classic() +
+  ggtitle("Number of sectors") +
+  theme(legend.position = "bottom", text = element_text(size = 12), axis.text.x = element_text(size = 5, angle = 90), plot.title = element_text(size = 12, hjust = 0.5))
+
+optim_plot
+
+# ggsave(file.path(here(), "figures", "jump_list", "4.optim_plot.jpg"), optim_plot)
+```
+
+
+## Best dataset
+The best result (highest number of jumps in the least amount of time) is given by the dataset with XX rotations and XX sectors.
+Rerun it to save results.
+
+```{r run best dataset and save results}
+
+# Right combination:
+optim_sum %>% filter(s == 4, r == 1)
+centroid <- c(mean(grid_data$longitude_rounded), mean(grid_data$latitude_rounded))
+
+spdata <- attribute_sectors(grid_data, nb_sectors = 4, centroid = centroid, rotation = 1)
+
+spdata_long <- spdata %>% 
+  pivot_longer(cols = starts_with("rotation"), names_to = "rotation_nb", 
+               values_to = "sectors_nb", names_prefix = "rotation",
+               names_transform = list(rotation_nb = as.integer)) 
+
+Results <- find_jumps(spdata_long, gap_size = 10, bio_year = c(2012:2015))
+
+dim(Results$Jump)
+head(Results$Dist)
+
+# write.csv(Results$Dist, file.path(here(), "exported-data", "thresholds.csv"), row.names = F)
+# write.csv(Results$Jump, file.path(here(), "exported-data", "jumps.csv"), row.names = F)
+```
+
+
+The jump dispersal events found by the function can be visualized on a map. Jump locations are colored according to their year of appearance, among all the established populations in grey. The introduction site is signaled by a blue cross. We note that most jump events occur in northern Virginia or western Pennsylvania. In Winchester (VA), a diffusive spread appears around jump events, indicating that a secondary invasion began in this area. A similar pattern is found around Harrisburg (PA), although the diffusive spread has now reached Harrisburg too.
+
+```{r map all jumps per params set}
+
+centroid <- data.frame(longitude_rounded = mean(grid_data$longitude_rounded), latitude_rounded = mean(grid_data$latitude_rounded))
+
+# All jumps one set
+map_jumps <- ggplot(data = states) +
+  geom_point(data = grid_data %>% filter(sp_established == T),
+             aes(x = longitude_rounded, y = latitude_rounded), size = 1, shape = 19, col = "grey") +
+  geom_point(data = centroid,
+             aes(x = longitude_rounded, y = latitude_rounded), col = "blue", shape = 4, size = 5) +
+  geom_point(data = Results$Jump, 
+             aes(x = longitude_rounded, y = latitude_rounded, fill = as.factor(bio_year)), shape = 21, size = 2) +
+  scale_fill_manual(values = c("firebrick3", "gold2", "black")) +
+  geom_text(data = states,
+            aes(X, Y, label = code), size = 4) +
+  labs(x = "Longitude", y = "Latitude")+
+  geom_sf(data = states, alpha = 0) + 
+  coord_sf(xlim = c(-88, -82), ylim = c(38, 43)) +
+  theme(legend.position="top") +
+  guides(fill = guide_legend("Year"))
+
+map_jumps
+
+# ggsave(file.path(here(), "figures", "jump_list", "map_jumps.jpg"), map_jumps , width = 8, height = 8)
+
+
+```
+
+
+
+\newpage
+
+
+# 3. Rarefy outbreaks
+
+Find points with important outbreaks
+
+```{r run group_jumps function to define groups}
+
+# The function needs to run separately for each set of parameters since the list of jumps is not the same!
+Jump_groups <- group_jumps(Results$Jump, gap_size = 10)
+
+#Check how many points there are per group
+Jump_groups %>% group_by(bio_year, Group) %>% summarise(Nb = n()) %>% arrange(-Nb) %>% filter(Nb > 1)
+
+
+#Check on a map if it worked!
+# Zoom on groups to see if groups make sense
+pal <- colorFactor(rep(rainbow(5), 8), 
+                   domain = unique(Jump_groups$Group))
+
+leaflet(data = Jump_groups) %>% 
+      addTiles() %>% 
+      addCircleMarkers(lng = ~longitude_rounded, 
+                       lat = ~latitude_rounded, 
+                       color = ~pal(Group), 
+                       label = ~Group)  
+
+# write.csv(Jump_groups, file.path(here(), "exported-data", "jump_groups.csv"), row.names = F)
+```
+
+
+They might be true independent jumps, i.e. the species hitchhiked multiple times to these locations the same year. Alternatively, they might be the result of the species quickly spreading from a single jump event. Finally, they can be a mix between these two hypotheses. For the rest of the analyses, we will test the two most contrasted hypotheses in parallel in order to test whether results vary. For the first hypothesis (all points are independent introductions), the dataset consists of all jump points. For the second hypothesis (diffusive spread after initial jump), the dataset consists of each "grouped jumps" summarized each by their most central point.
+
+
+```{r run rarify_groups function on all datasets}
+Jumps_unique <- rarefy_groups(Jump_groups) %>% add_column(Rarefied = TRUE)
+dim(Jumps_unique)
+
+# Map it
+map_rarefied <- ggplot(data = states) +
+  geom_sf(data = states, fill = "white") +
+  coord_sf(xlim = c(-88, -82), ylim = c(38, 43)) +
+  geom_point(data = Jump_groups,
+             aes(x = longitude_rounded, y = latitude_rounded, col = as.factor(Group)), shape = 19, size = 3, show.legend = F) +
+  geom_point(data = Jumps_unique, aes(x = longitude_rounded, y = latitude_rounded)) +
+  labs(x = "Longitude", y = "Latitude")+
+  theme(legend.position="right")
+
+map_rarefied
+
+# ggsave(file.path(here(), "figures", "jump_list", "6.map_rarefication.jpg"),
+       # map_rarefied, width = 5, height = 5)
+```
+
+
+## Assemble datasets
+Assemble the datasets to have only one big dataset with all jumpers: different sets of parameters, full, and reduced.
+
+```{r assemble all datasets into one}
+
+Jumps_unique %<>% select("longitude_rounded", "latitude_rounded", "bio_year", "Rarefied")
+
+Jumps_full_rarefied <- merge(Results$Jump, Jumps_unique, by = c("latitude_rounded", "longitude_rounded", "bio_year"), all = T)
+
+dim(Results$Jump)[1] == dim(Jumps_full_rarefied)[1]
+dim(Jumps_full_rarefied %>% filter(Rarefied == TRUE))[1] == dim(Jumps_unique)[1]
+
+# write.csv(Jumps_full_rarefied, file.path(here(), "exported-data", "jumps_full_rarefied.csv"), row.names = F)
+```
+
+
+# 4. Analysis
+
+## Map of jumps
+
+```{r jumps map}
+
+map_rarefied <- ggplot(data = grid_data) +
+  geom_sf(data = states, fill = "white") +
+  geom_point(data = grid_data %>% filter(sp_established == T), 
+             aes(x = longitude_rounded, y = latitude_rounded), col = "lightgrey") +
+  geom_sf(data = states, alpha = 0) +
+  geom_point(data = centroid, aes(x = longitude_rounded, y = latitude_rounded), col = "black", shape = 4, size = 5) +
+  geom_point(data = Jumps_full_rarefied,
+             aes(x = longitude_rounded, y = latitude_rounded,
+                 col = as.factor(bio_year), 
+                 # stroke = Rarefied, group = Rarefied, shape = Rarefied
+                 ), size = 4) +
+  
+  # scale_discrete_manual(aesthetics = "stroke", values = c('Rarefied' = 1, 'Full' = 2)) +
+  # scale_discrete_manual(aesthetics = "shape", values = c('Rarefied' = 19, 'Full' = 21)) +
+  scale_color_manual(values = c("gold2", "firebrick3", "#0072B2", "#009E73")) +
+  scale_fill_manual(values = c("gold2", "firebrick3", "#0072B2", "#009E73")) +
+  scale_alpha_manual(values = c(0.5, 1)) +
+  coord_sf(xlim = c(-88, -82), ylim = c(38, 43)) +
+  labs(x = "Longitude", y = "Latitude") +
+  theme(legend.position="right", text = element_text(size = 10),
+        panel.background = element_rect(fill = "white"),
+        legend.key = element_rect(fill = "white")) +
+   guides(colour = guide_legend("Biological year"), alpha = guide_legend("Dataset"), fill = guide_legend("Biological year"))
+
+map_rarefied
+
+# ggsave(file.path(here(), "figures", "jump_list", "7.map_jumpsv2.jpg"), map_rarefied, height = 8, width = 8)
+```
+
+
+## Number of jumps per year
+
+```{r number of jumps per year}
+
+# Bar plot of the number of jumps per year
+Jumps_year <- Jumps_full_rarefied %>% group_by(bio_year, Rarefied) %>% summarise(n = n())
+ 
+jumps_plot <- ggplot() +
+  geom_bar(data = Jumps_year, 
+           aes(x = bio_year, y = n, fill = as.factor(bio_year), group = Rarefied, col = as.factor(bio_year), 
+               alpha = Rarefied), stat = "identity", lwd = .25) +
+  scale_fill_manual(values = c("gold2", "firebrick3", "#0072B2", "#009E73")) +
+  # scale_alpha_manual(values = c(0, 1)) +
+  scale_color_manual(values = c("gold2", "firebrick3", "#0072B2", "#009E73")) +
+  xlab("Biological year") +
+  ylab("Number of jumps") +
+  theme_classic() +
+  guides(alpha = "none", fill = "none", col = "none") +
+  theme(text = element_text(size = 10), legend.position = "top")
+
+jumps_plot
+
+# ggsave(file.path(here(), "figures", "jump_list", "8.jumps_number.jpg"), jumps_plot, height = 2.5, width = 4)
+```
+
+
+## Mean distance to the invasion front per year
+
+```{r mean dist to threshold per year}
+
+Thresholds <- Results$Dist 
+centroid <- c(mean(grid_data$longitude_rounded), mean(grid_data$latitude_rounded))
+
+Thresholds %<>% filter(rotation_nb == 1) %>% 
+  select(longitude_rounded, latitude_rounded, bio_year, sectors_nb) %>% 
+  rename(sectors = sectors_nb,
+         latitude_threshold = latitude_rounded,
+         longitude_threshold = longitude_rounded)
+
+# Attribute sectors to each jump: find sector for rotation 0
+Jumps_sectors <- attribute_sectors(Jumps_full_rarefied, nb_sectors = 4, centroid = centroid, rotation = 1) 
+Jumps_sectors %<>% select(-c(theta.1, sectors)) %>% rename(sectors = rotation1)
+
+# Find corresponding threshold per bio year 
+Thresholds$bio_year <- as.factor(Thresholds$bio_year)
+JumpLength <- left_join(Jumps_sectors, Thresholds, by = c("sectors", "bio_year"))
+
+JumpLength %<>% rowwise() %>%  
+  mutate(DistToThreshold = as.vector(distm(c(longitude_rounded, latitude_rounded), 
+                                           c(longitude_threshold, latitude_threshold), fun = distGeo))/1000)
+
+# write.csv(JumpLength, file.path(here(), "exported-data", "DistToThreshold.csv"))
+
+JumpLength_tot <- rbind(JumpLength %>% filter(Rarefied == "Rarefied"),
+                        JumpLength %>% mutate(Rarefied = "Full"))
+dim(JumpLength_tot)[1]
+
+
+# Boxplot
+JumpLength_tot$Rarefied <- factor(JumpLength_tot$Rarefied, levels = c("Rarefied", "Full"))
+MeanDist_jump <- ggplot() +
+  geom_boxplot(data = JumpLength_tot,
+             aes(x = as.factor(bio_year), y = DistToThreshold, 
+                 col = as.factor(bio_year),
+                 fill = as.factor(bio_year),
+                 alpha = Rarefied)) +
+  scale_alpha_manual(values = c(0.7,0)) +
+  scale_discrete_manual(aesthetics = "shape", values = c('Rarefied' = 19, 'Full' = 21)) +
+  scale_color_manual(values = c("gold2", "firebrick3", "#0072B2", "#009E73")) +
+  scale_fill_manual(values = c("gold2", "firebrick3", "#0072B2", "#009E73")) +
+  labs(x = "Dataset", y = "Distance to the invasion front (km)") +
+  theme_classic() +
+  theme(legend.position="top", text = element_text(size = 10), plot.tag.position = c(0.01, 1)) + 
+  guides(fill = "none", shape = "none", col = "none", alpha = "none")
+MeanDist_jump
+
+
+# ggsave(file.path(here(), "figures", "jump_list", "10.jumps_number_boxplot.jpg"), MeanDist_jump, height = 2.5, width = 4)
+
+# Summary
+JumpLength_tot %>% group_by(Rarefied, bio_year) %>% summarise(mean(DistToThreshold))
+summary(aov(DistToThreshold ~ bio_year, data = JumpLength))
+```
+
+
+
+## Map of outbreaks
+
+```{r jumps map}
+hist(Jump_groups %>% count(Group) %>% filter(n > 1) %>% pull(n), breaks = 100)
+
+outbreaks <- Jump_groups %>% count(Group) %>% filter(n > 1)
+
+pal <- colorFactor(rep(rainbow(5), 8), 
+                   domain = unique(Jump_groups$Group))
+
+leaflet(data = Jump_groups) %>% 
+      addTiles() %>% 
+      addCircleMarkers(lng = ~longitude_rounded, 
+                       lat = ~latitude_rounded, 
+                       color = ~pal(Group), 
+                       label = ~Group)  
+
+```
+
+
+\newpage
+
+# 5. Conclusion
+
