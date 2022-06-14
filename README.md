@@ -28,7 +28,8 @@ We do not offer the possibility to execute all vignettes and render a site using
 
 You can manually access the analyses by opening the vignettes (folder vignettes/), modifying the code and running them.
 
-Vignette 1 generates simulated data to execute Vignette 2 and give users the opportunity to test the functions and see the format required to execute the analysis.
+Vignette 01_Generate_dataset generates simulated data to execute Vignette 02_Identify_jumps.
+Vignette 02_Identify_junps gives users the opportunity to test the functions to identify jumps and rarefy the jump dataset, as well as check the format required to execute the analysis.
 
 # References
 
