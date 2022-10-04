@@ -2,9 +2,6 @@
 title: "Identifying dispersal jump from spatial occurrence data"
 author: 
 - Nadege Belouard^[Temple University, nadege.belouard@temple.edu]
-- Sebastiona De Bona^[Temple University, seba.debona@temple.edu]
-- Jocelyn E. Behm^[Temple University, jebehm@temple.edu]
-- Matthew R. Helmus^[Temple University, mrhelmus@temple.edu]
 date: "1/6/2021"
 output:
   pdf_document:
@@ -446,7 +443,7 @@ dim(Jumps_full_rarefied %>% filter(Rarefied == TRUE))[1] == dim(Jumps_unique)[1]
 
 ## Map of jumps
 
-```{r jumps map}
+```{r jump map}
 
 map_rarefied <- ggplot(data = grid_data) +
   geom_sf(data = states, fill = "white") +
@@ -566,7 +563,7 @@ summary(aov(DistToThreshold ~ bio_year, data = JumpLength))
 
 ## Map of outbreaks
 
-```{r jumps map}
+```{r jump map with outbreaks}
 hist(Jump_groups %>% count(Group) %>% filter(n > 1) %>% pull(n), breaks = 100)
 
 outbreaks <- Jump_groups %>% count(Group) %>% filter(n > 1)

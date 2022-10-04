@@ -7,7 +7,7 @@ The ```jumpID``` package is a tool to identify, analyze and predict the location
 Open your Terminal or git shell, and set the working directory to the folder where you want the project to be stored using cd. Then, type:
 
 ```
-git clone git@gitlab.com:nbelouard/jumpID.git
+git clone https://github.com/nbelouard/jumpID.git
 ```
 
 ## Access and reproduce this analysis

@@ -12,11 +12,18 @@ Let's generate a dataset to test the jump identification script
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
+library(tidyverse)
 library(ggplot2)
 library(here)
 library(magrittr)
 library(sf)
+library(stringr)
 sf::sf_use_s2(FALSE)
+
+# Create a folder if it does not exist
+if (file.exists(file.path(here(),"data")) == FALSE){
+  dir.create(file.path(here(),"data"))
+}
 ```
 
 Create coordinates on a single axis: diffusive spread, jumps, and negatives
