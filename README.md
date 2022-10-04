@@ -10,14 +10,6 @@ Open your Terminal or git shell, and set the working directory to the folder whe
 git clone git@gitlab.com:nbelouard/jumpID.git
 ```
 
-## (optional) Prepare your R for the analyses
-
-The jumpID package relies on a variety of other R packages to function. They are specified as Imports in the DESCRIPTION file, and will be automatically installed with the jumpID package. If you wish to prepare the R environment for the jumpID package manually, you can do so by pasting this command into R or RStudio.
-
-```
-install.packages(c('tidyverse', 'here', 'magrittr', 'rmarkdown', 'ggplot2', 'pkgdown', 'knitr', 'sf', 'maps', 'DescTools', 'geosphere', 'leaflet', 'dplyr', 'gridExtra', 'ape', 'spdep', 'roxygen2'))
-```
-
 ## Access and reproduce this analysis
 
 If you wish to reproduce the analyses, once the project is cloned locally:
@@ -26,7 +18,7 @@ If you wish to reproduce the analyses, once the project is cloned locally:
 
 We do not offer the possibility to execute all vignettes and render a site using pkgdown since (1) most analyses require a long computation (e.g. distances calculation), and (2) you will need to modify the vignettes with your own data.
 
-You can manually access the analyses by opening the vignettes (folder vignettes/), modifying the code and running them.
+You can manually access and run the analyses by opening the vignettes (folder vignettes/).
 
 Vignette 01_Generate_dataset generates simulated data to execute Vignette 02_Identify_jumps.
 Vignette 02_Identify_junps gives users the opportunity to test the functions to identify jumps and rarefy the jump dataset, as well as check the format required to execute the analysis.
