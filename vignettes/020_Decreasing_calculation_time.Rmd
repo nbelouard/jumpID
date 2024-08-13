@@ -1,0 +1,121 @@
+---
+title: "#2: Decreasing calculation time"
+author: 
+- Nadege Belouard^[iEco lab at Temple University, Ecobio lab at the University of Rennes, nadege.belouard@gmail.com]
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc: TRUE
+    toc_depth: 2
+  html_document:
+    toc: TRUE
+    toc_depth: 3
+params:
+  display: FALSE
+  run: TRUE
+  loadfiles: FALSE
+  savefiles: TRUE
+editor_options: 
+  chunk_output_type: console
+---
+
+# Aim and setup
+
+In case of extremely large species occurrence datasets, it may take a long time to run the analyses. Any number of sectors will provide the accurate results. However, computational time may be decreased by increasing the number of sectors considered. The higher the number of sectors, the larger the invasion radius at which points are compared by pairs in `find_thresholds`, so the fewer distances need to be calculated. However, the lower the number of sectors, the better pre-identification of spatial discontinuities and the more pruned the list of potential jumps, so the faster `find_jumps`. The lowest computational time is therefore obtained by a trade-off between dataset size, invasion radius, and number of sectors.  
+  
+We demonstrate the effect of the number of sectors on computational time on the SLF dataset.  
+
+```{r load packages, messages = F, warning = F}
+library(magrittr)  
+library(dplyr)
+library(jumpID)
+```
+
+Load the grid data created in the first vignette  
+```{r load grid data}
+
+grid_data <- read.csv(file.path(here::here(), "exported-data", "grid_data.csv"))  
+``` 
+
+
+# Compare calculation times 
+Run the jumpID functions successively for 16, 40, and 80 sectors and compare computation times.  
+```{r run optimization}
+sectors = c(16,40,80)
+
+optim <- data.frame(s = NULL, 
+                       Time_sectors = NULL,
+                       Time_thresholds = NULL,
+                       potJumps = NULL, 
+                       Time_jumps = NULL,
+                       Jumps = NULL, 
+                       Time_secDiff = NULL)
+
+for (s in sectors){
+  print(paste0("Sectors: ", s))
+  
+  #1 Attribute sectors
+  start.time.attribute_sectors <- Sys.time()
+  grid_data_sectors <- jumpID::attribute_sectors(dataset = grid_data, 
+                                                   nb_sectors = s, 
+                                                   centroid = c(-75.675340, 40.415240))
+  end.time.attribute_sectors <- Sys.time()
+  time.taken.attribute_sectors <- end.time.attribute_sectors - start.time.attribute_sectors
+  
+  
+  
+  #2 Find thresholds
+  start.time.find_thresholds <- Sys.time()
+  Results_thresholds <- jumpID::find_thresholds(dataset = grid_data_sectors, 
+                                                  gap_size = 15, 
+                                                  negatives = T)
+  preDist <- Results_thresholds$preDist 
+  potJumps <- Results_thresholds$potJumps 
+  end.time.find_thresholds <- Sys.time()
+  time.taken.find_thresholds <- end.time.find_thresholds - start.time.find_thresholds
+  
+  
+  
+  #3 Find jumps
+  start.time.find_jumps <- Sys.time()
+  Results_jumps <- jumpID::find_jumps(grid_data = grid_data, 
+                                        potJumps = potJumps,
+                                        gap_size = 15)
+  Jumps <- Results_jumps$Jumps 
+  diffusers <- Results_jumps$diffusers 
+  potDiffusion <- Results_jumps$potDiffusion 
+  end.time.find_jumps <- Sys.time()
+  time.taken.find_jumps  <- end.time.find_jumps - start.time.find_jumps 
+  
+  
+  
+  #4 Find sec diff
+  start.time.find_secDiff <- Sys.time()
+  Results_secDiff <- jumpID::find_secDiff(potDiffusion = potDiffusion,
+                                            Jumps = Jumps,
+                                            diffusers = diffusers,
+                                            Dist = preDist,
+                                            gap_size = 15)
+  end.time.find_secDiff <- Sys.time()
+  time.taken.find_secDiff  <- end.time.find_secDiff - start.time.find_secDiff 
+  
+  
+  
+  result <- data.frame(s = s, 
+                       Time_sectors = time.taken.attribute_sectors,
+                       Time_thresholds = time.taken.find_thresholds,
+                       potJumps = dim(potJumps)[1], 
+                       Time_jumps = time.taken.find_jumps,
+                       Jumps = dim(Jumps)[1], 
+                       Time_secDiff = time.taken.find_secDiff,
+                       Total_time = time.taken.attribute_sectors + time.taken.find_thresholds +
+                         time.taken.find_jumps + time.taken.find_secDiff)
+  optim <- rbind(optim, result)
+}
+
+optim
+```
+
+For this dataset, all computational times are decreased by dividing space into 40 sectors instead of 16. Data is not dense enough for dividing space into 80 sectors, as indicated by multiple warning messages from `find_threshold`.  
+  
+-- end of vignette --

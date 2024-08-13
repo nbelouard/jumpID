@@ -2,25 +2,27 @@
 % Please edit documentation in R/find_jumps.R
 \name{find_jumps}
 \alias{find_jumps}
-\title{Find jump dispersal events}
+\title{Find dispersal jumps}
 \usage{
-find_jumps(dataset, bio_year = c(2014:2021), gap_size = 15)
+find_jumps(grid_data = grid_data, potJumps = potJumps, gap_size = 15)
 }
 \arguments{
-\item{dataset}{A dataset to be processed}
+\item{grid_data}{A data frame of unique points to be processed, i.e., the initial grid_data table}
 
-\item{bio_year}{Years to be considered (default: 2014 to 2021)}
+\item{potJumps}{A data frame of potential jumps to be refined, resulting from find_thresholds()}
 
 \item{gap_size}{Distance between the invasion front and the positive point
 necessary for it to be considered a jump, in kilometers (default: 15)}
 }
 \value{
-Two tables: one table \code{Thresholds} containing the threshold per year and sector,
-one table \code{Jumps} containing the list of jumps
+Two data frames: \code{Jumps} containing the list of jumps, and \code{potSecDiff} containing
+potential secondary diffusion to be processed using find_secDiff()
 }
 \description{
-Find jump dispersal events after having applied attribute_sectors
+Find dispersal jumps after having applied find_thresholds(). Prune points selected due to sector limits and secondary diffusion.
 }
 \examples{
+\dontrun{
 jumps <- find_jumps(dataset)
+}
 }

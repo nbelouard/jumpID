@@ -7,18 +7,20 @@
 group_jumps(jumps, gap_size = 15)
 }
 \arguments{
+\item{jumps}{A dataset to be processed}
+
 \item{gap_size}{Distance between the invasion front and the positive point
 necessary for it to be considered a jump, in kilometers (default: 15)}
-
-\item{Jumps_oneparam}{A dataset to be processed}
 }
 \value{
-The same table as \code{dataset} with an additional column named
+The same table as \code{dataset} with an additional column named 
 \code{group} and containing the group number for each jump
 }
 \description{
 Identify independent locations of jump dispersal
 }
 \examples{
+\dontrun{
 new_dataset <- group_jumps(dataset)
+}
 }

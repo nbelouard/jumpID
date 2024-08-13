@@ -2,5 +2,8 @@
 
 export(attribute_sectors)
 export(find_jumps)
+export(find_jumps_wrapper)
+export(find_secDiff)
+export(find_thresholds)
 export(group_jumps)
 export(rarefy_groups)

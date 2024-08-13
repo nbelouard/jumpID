@@ -1,4 +1,4 @@
-#'Determine sectors for each point based on trigonometry
+#'Determine sectors for each occurrence point
 #'
 #'A full circle is 2*pi, the sector of each point is determined 
 #'by atan2(y,x), the angle of the point relative to the horizontal line 
@@ -7,44 +7,45 @@
 #'@export
 #'
 #'@param dataset A dataset to be processed
-#'@param nb_sectors Number of sectors to divide the space in (default: 8)
-#'@param centroid Coordinates of the centroid to center the circle (lat, long; default: -75.675340, 40.415240)
-#'@param rotation Number of rotations of the grid wanted (default: 1)
+#'@param nb_sectors Number of sectors to divide the invasion space (default: 8)
+#'@param centroid Coordinates of the centroid to center the circle (long, lat; 
+#'default: -75.675340, 40.415240)
 #'
-#'@return The same table as \code{dataset} with an additional column named 
-#'\code{sectors} and containing the sector number for each row 
+#'@return The same table as \code{dataset} with additional columns: 
+#'\code{sectors} containing the total number of sectors considered,  
+#'\code{sectors_nb} containing the sector number attributed to this cell  
 #' 
 #'@examples
+#'\dontrun{
 #' new_dataset <- attribute_sectors(dataset)
+#'}
 
 
-attribute_sectors <- function(dataset, nb_sectors = 8, centroid = c(-75.675340, 40.415240), rotation = 1) {
+attribute_sectors <- function(dataset, 
+                              nb_sectors = 8, 
+                              centroid = c(-75.675340, 40.415240)) {
   
-  # Calculate theta, the angle between the point and the horizontal line, for each point
+  cat(paste(Sys.time(), "Start sector attribution... "))
   x = NULL
   y = NULL
-  # dataset$theta <- NA
-  # grid_data <- dataset
-  grid_data <- dataset %>% add_column(theta = NA,
-                                      sectors = nb_sectors)
   
-  for (i in 1:length(grid_data$longitude_rounded)) {
-    x = grid_data$longitude_rounded[i] - centroid[1]
-    y = grid_data$latitude_rounded[i] - centroid[2]
-    grid_data$theta[i] = base::atan2(y,x) + pi
-  }
+  # create a column to remind of the total number of sectors considered
+  grid_data <- dataset %>% dplyr::mutate(nb_sectors = nb_sectors) 
   
-  # Create a variables for the angle
-  angle_sector = 2*pi/nb_sectors
-  p = angle_sector/rotation
-  # Attribute the right disk portion number
-  for (i in 0:(rotation-1)){
-    grid_data <- grid_data %>% mutate(thetanew = theta - p*i,
-                                      thetanew = ifelse(thetanew < 0, thetanew + 2*pi, thetanew),
-                                      sector = ceiling((thetanew)/angle_sector)) %>%
-      dplyr::select(-thetanew)
-    names(grid_data)[which(names(grid_data) == 'sector')] <- paste("rotation", i+1, sep = "")
-  }
+  # Create an object containing the angle of a sector
+  # a full circle is 2pi, divide by nb_sectors to get the angle of one sector
+  angle_sector = 2*pi/nb_sectors 
+  
+  # Calculate theta, the angle between the point and the horizontal of the 
+  # centroid, for each point
+  grid_data %<>% dplyr::mutate(theta = base::atan2(latitude - centroid[2],
+                                           longitude - centroid[1]) + pi)
+
+  # Attribute the sector number for each point
+  grid_data %<>% dplyr::mutate(sectors_nb = ceiling(theta/angle_sector)) %>% 
+    dplyr::select(-theta) # remove theta that will not be used anymore
+  
+  cat(paste("Sector attribution completed. \n"))
   
   return(grid_data)
 }

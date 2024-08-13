@@ -2,33 +2,30 @@
 % Please edit documentation in R/attribute_sectors.R
 \name{attribute_sectors}
 \alias{attribute_sectors}
-\title{Determine sectors for each point based on trigonometry}
+\title{Determine sectors for each occurrence point}
 \usage{
-attribute_sectors(
-  dataset,
-  nb_sectors = 8,
-  centroid = c(-75.67534, 40.41524),
-  rotation = 1
-)
+attribute_sectors(dataset, nb_sectors = 8, centroid = c(-75.67534, 40.41524))
 }
 \arguments{
 \item{dataset}{A dataset to be processed}
 
-\item{nb_sectors}{Number of sectors to divide the space in (default: 8)}
+\item{nb_sectors}{Number of sectors to divide the invasion space (default: 8)}
 
-\item{centroid}{Coordinates of the centroid to center the circle (lat, long; default: -75.675340, 40.415240)}
-
-\item{rotation}{Number of rotations of the grid wanted (default: 1)}
+\item{centroid}{Coordinates of the centroid to center the circle (long, lat; 
+default: -75.675340, 40.415240)}
 }
 \value{
-The same table as \code{dataset} with an additional column named
-\code{sectors} and containing the sector number for each row
+The same table as \code{dataset} with additional columns: 
+\code{sectors} containing the total number of sectors considered,  
+\code{sectors_nb} containing the sector number attributed to this cell
 }
 \description{
-A full circle is 2*pi, the sector of each point is determined
-by atan2(y,x), the angle of the point relative to the horizontal line
+A full circle is 2*pi, the sector of each point is determined 
+by atan2(y,x), the angle of the point relative to the horizontal line 
 of the introduction site
 }
 \examples{
+\dontrun{
 new_dataset <- attribute_sectors(dataset)
+}
 }

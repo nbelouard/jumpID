@@ -16,6 +16,7 @@ A table containing the rarefied dataset
 Build the rarefied dataset by keeping only the centroid of each cluster of jumps
 }
 \examples{
+\dontrun{
 new_dataset <- rarefy_groups(dataset)
-
+} 
 }

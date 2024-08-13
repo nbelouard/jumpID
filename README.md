@@ -1,28 +1,51 @@
-# Description
+# jumpID: an R package to differentiate diffusive spread and dispersal jumps in biological invasions
 
-The ```jumpID``` package is a tool to identify, analyze and predict the location of dispersal jumps in recent biological invasions. It is presented as an open access package with a simulated dataset. You can use this package to identify and analyze jump dispersal in biological invasions with the following steps:
+## Description
 
-## Clone this project locally
+While most dispersal events occur over short distances and result in a continuous species range, human-assisted dispersal promotes the occurrence of dispersal "jumps", and the establishment of satellite populations away from the core of the invasion. Distinguishing diffusive spread and jump dispersal is important to understand the process of invasion, its evolution, but also to take efficient management measures. Through a directional analysis of species occurrence data, the `jumpID` R package differentiates diffusive spread and dispersal jumps in biological invasions, and identifies secondary diffusion stemming from dispersal jumps. `jumpID` is presented as a GitHub R package applied to the example of the invasion of the spotted lanternfly in the United States.  
 
-Open your Terminal or git shell, and set the working directory to the folder where you want the project to be stored using cd. Then, type:
+<< here add graphical abstract/workflow figure >>  
+
+The spotted lanternfly, *Lycorma delicatula* (hereafter SLF) is an insect from China that is an invasive pest in the US. Since the initial detection of SLF in Pennsylvania in 2014, large-scale surveys were conducted to trace the progression of the invasion. A unique dataset summarizing SLF presence and absence in the US is available in the `lydemapr` R package and constitutes an opportunity to study the spread of the SLF.  
+
+Use this package to identify and analyze dispersal jumps, diffusive spread and secondary diffusion in other biological invasions.
+
+
+## Installation
+
+### If you wish to visualize the tutorial only  
+2 options:  
+* Access the “Articles” tab of the <a href="https://nbelouard.github.io/jumpID">jumpID GitHub website</a>    
+* Download the PDF tutorial in the vignettes folder of the <a href="https://github.com/nbelouard/jumpID">jumpID GitHub repository</a>
+
+
+### If you wish to install the package and execute the tutorial  
+In the R terminal tab, cd to the folder where you want to store the project, and type:
 
 ```
 git clone https://github.com/nbelouard/jumpID.git
 ```
 
-## Access and reproduce this analysis
+Access the content of the package by opening the `jumpID.Rproj` file in Rstudio. Install jumpID by typing in the R console:
 
-If you wish to reproduce the analyses, once the project is cloned locally:
-- access the folder and open the jumpID.Rproj file to open the project in Rstudio
-- install the package using the R button "install and restart" in the Build tab of Rstudio. 
+```r 
+devtools::install()
+``` 
 
-We do not offer the possibility to execute all vignettes and render a site using pkgdown since (1) most analyses require a long computation (e.g. distances calculation), and (2) you will need to modify the vignettes with your own data.
+Finally, open the tutorial file (.Rmd) in the vignettes folder, and execute the code chunks.
 
-You can manually access and run the analyses by opening the vignettes (folder vignettes/).
 
-Vignette 01_Generate_dataset generates simulated data to execute Vignette 02_Identify_jumps.
-Vignette 02_Identify_junps gives users the opportunity to test the functions to identify jumps and rarefy the jump dataset, as well as check the format required to execute the analysis.
+### If you wish to use the package functions only, without using the tutorial  
+Install the package by typing the following line of code in the R console:
 
-# References
+```r 
+devtools::install_github("nbelouard/jumpID", dependencies = TRUE)
+library(jumpID)
+```
 
-For further information, contact @nbelouard
+The functions are now ready to use, and the help file is accessible by typing ?function_name.
+
+
+## Citation
+
+N. Belouard, S. De Bona, M.R. Helmus,  I.G. Smith, J.E. Behm, 2024. Identifying jump dispersal locations from Big Data on invasive species spread: the case of the spotted lanternfly *Lycorma delicatula*. https://nbelouard.github.io/jumpID 

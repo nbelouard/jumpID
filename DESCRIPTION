@@ -1,31 +1,27 @@
 Package: jumpID
-Title: Find and analyze the location of dispersal jumps in biological invasions
-Version: 0.0.0.9000
+Title: Identify jump dispersal in biological invasions
+Version: 1.0
 Authors@R: 
     person("Nadège", "Belouard", , "nadege.belouard@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-7968-7735"))
-Description: jumpID generates a dataset of spatial occurrence data of a recent biological invasion and analyses the data to find dispersal jumps
+Maintainer: Nadège Belouard <nadege.belouard@gmail.com>
+URL: https://nbelouard.github.io/slfjumps/
+Description: jumpID finds dispersal jumps and secondary diffusion from occurrence data.
+BugReports: https://github.com/nbelouard/jumpID/issues
 License: use_mit_license()
 Imports: 
-  tidyverse,
-  magrittr,
-  sf,
+  DescTools,
+  dplyr,
+  geosphere,
   ggplot2,
   here,
-  rmarkdown,
-  roxygen2,
-  pkgdown,
   knitr,
-  maps,
-  DescTools,
-  geosphere,
-  leaflet,
-  dplyr, 
-  gridExtra,
-  ape,
-  spdep,
-  stringr,
-  lwgeom
+  magrittr,
+  sf,
+  tibble
+Depends:
+  R (>= 4.0.0)
 Encoding: UTF-8
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.1
+LazyData: true
+RoxygenNote: 7.3.2
+VignetteBuilder: knitr

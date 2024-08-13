@@ -1,181 +1,96 @@
-#'Find jump dispersal events
+#'Find dispersal jumps 
 #'
-#'Find jump dispersal events after having applied attribute_sectors
-#'
+#'Find dispersal jumps after having applied find_thresholds(). Prune points selected due to sector limits and secondary diffusion.
+
 #'@export
 #'
-#'@param dataset A dataset to be processed
-#'@param bio_year Years to be considered (default: 2014 to 2021)
+#'@param grid_data A data frame of unique points to be processed, i.e., the initial grid_data table
+#'@param potJumps A data frame of potential jumps to be refined, resulting from find_thresholds()
 #'@param gap_size Distance between the invasion front and the positive point
 #'necessary for it to be considered a jump, in kilometers (default: 15)
 #'
-#'@return Two tables: one table \code{Thresholds} containing the threshold per year and sector,
-#'one table \code{Jumps} containing the list of jumps
+#'@return Two data frames: \code{Jumps} containing the list of jumps, and \code{potSecDiff} containing
+#'potential secondary diffusion to be processed using find_secDiff()
 #' 
 #'@examples
+#'\dontrun{
 #' jumps <- find_jumps(dataset)
+#' }
 
 
-find_jumps <- function(dataset, 
-                                        bio_year = c(2014:2021),
-                                        gap_size = 15) {
+find_jumps <- function(grid_data = grid_data, 
+                       potJumps = potJumps,
+                       gap_size = 15) {
   
-  ##############################################################################################
-  ## PHASE 1: IDENTIFY THE THREHOLDS OF DIFFUSIVE SPREAD, AND GET A LIST OF POTENTIAL JUMPS  ###
-  ##############################################################################################
-  #Initialize variables for the results
-  Dist = NULL
-  Jumps_alls = NULL
-  Jumps_allr = NULL
-  rotation = unique(sort(dataset$rotation_nb)) #Look for the number of rotations in the dataset
-  sector = unique(sort(dataset$sectors_nb)) #Look for the number of portions in the dataset
+  cat(paste(Sys.time(), "Start finding jumps... "))
   
-  for (rot in rotation){
-    dataset_rot <- dataset %>% filter(rotation_nb == rot) #Create a dataset for this rotation
+  Jumps = NULL # create an empty object to store true jumps
+  year <- unique(grid_data$year)
+
+  for (y in year[1:length(year)]){ # for each year
+    cat(paste("Year", y, "... "))
     
-    for (s in sector){
-      dataset_n = NULL
-      jumpers_sector = data.frame(DistToIntro = 0)
-      for (y in bio_year){
-        
-        #Select the dataset. We assume that no population is going extinct over the years and cumulate datasets.
-        dataset_n <- rbind(dataset_n, dataset_rot %>% filter(sectors_nb == s & bio_year == y & sp_established == T))
-        if (dim(dataset_n)[1] == 0){ #If there is no point in the sector up to that year, go to the next sector
-          next
-        }
-        
-        # Initialize values
-        i = 1
-        distancei = 1
-        j = 2
-        distancej = 2
-        
-        # Order the variable by increasing order
-        distance_sorted <- sort(dataset_n$DistToIntro) 
-        
-        # Loop until it finds the threshold or until the variable is finished
-        while ( (distancei + gap_size > distancej) & (j <= length(distance_sorted)) ) { 
-          distancei = distance_sorted[i]
-          distancej = distance_sorted[j]
-          i = i+1
-          j = j+1
-        }
-        
-        if (distancei + gap_size > distancej) { # there is no jump
-          threshold = distance_sorted[i]
-        } else { #a jump was found, take the previous iteration
-          threshold = distance_sorted[i-1]
-          # print(paste0("Jump in ", rot, ", portion ", p, " and year ", y, " after distance ", distancei))
-          # We make sure that the gap is not due to an absence of surveys!
-          dataset_total <- dataset_rot %>% filter(sectors_nb == s & bio_year %in% c(2014:y) & between(DistToIntro, threshold, threshold+15))
-          dim(dataset_total)[1]
-          if (dim(dataset_total)[1] == 0) { 
-            print(paste0("Error: there is no survey in the gap in rotation ", rot, ", sector ", s, " and year ", y, " after distance ", threshold)) 
-          }
-        }
-        
-        
-        
-        #Find the threshold survey in the initial table (that is not ordered)
-        rowNumber = which(grepl(threshold, dataset_n$DistToIntro))
-        if (length(rowNumber > 1)) { rowNumber = tail(rowNumber, n = 1)} #If the threshold has been the same for several years, take the last year
-        
-        #Store results in objects
-        threshold_survey = dataset_n[rowNumber,]
-        
-        # Make sure the threshold is associated to the correct year, even if the threshold is the same as the year before
-        threshold_survey$bio_year <- y
-        jump_survey = dataset_n %>% filter(DistToIntro > threshold & bio_year == y)
-        
-        # Add results at each iteration
-        Dist = rbind(Dist, threshold_survey)
-        jumpers_sector = dplyr::bind_rows(jumpers_sector, jump_survey)
-      }
-      Jumps_alls = rbind(Jumps_alls, jumpers_sector[-1,])
-    }
+    jumps_year <- potJumps %>% dplyr::filter(year == y) %>% dplyr::select(-nb_sectors, -sectors_nb)  # select potential jumps for this year
+    dataset_all <- grid_data %>% dplyr::filter(year %in% c(year[1]:y) & established == T) # select all points up to this year
+    dataset_diffusers <- dplyr::setdiff(dataset_all, jumps_year) # select all points up to this year, except potential jumps this year (includes previous jumps)
+    jumps_year %<>% dplyr::mutate(DistToSLF = NA) #Create an empty column for the distance to the nearest other point
     
-    Jumps_allr = rbind(Jumps_allr, Jumps_alls)
-  } 
-  
-  # Reduce the jump list and the dataset to unique points (without repetitions due to rotations)
-  Jumps_all = Jumps_allr %>% dplyr::select(-c(sectors_nb, rotation_nb, sectors)) %>% unique()
-  dataset_unique = dataset %>% dplyr::select(-c(sectors_nb, rotation_nb, sectors)) %>% unique()
-  
-  
-  
-  ###########################################################################
-  ## PHASE 2: KEEP ONLY JUMPS AT LEAST <gap size> AWAY FROM OTHER POINTS  ###
-  ###########################################################################
-  # Are surveys in the list of jump surveys real new jumps or just diffusion of secondary introductions from the previous year?
-  # i.e. are new jumpers less than 10 miles from a previous jump?
-  # we run that second part on the whole dataset, not within disk portions, to avoid the occurrence of false-positive)
-  
-  dataset_nprev = NULL
-  Jumps = NULL
-  
-  for (y in bio_year[1:length(bio_year)]){
-    jumps_year <- Jumps_all %>% dplyr::filter(bio_year == y)  #select jumps for this year
-    dataset_all <- dataset_unique %>% dplyr::filter(bio_year %in% c(bio_year[1]:y) & sp_established == T) #all points up to this year
-    doubles <- bind_rows(jumps_year, dataset_all) #aggregate the datasets
-    dataset_diffusers <- doubles %>% group_by_all() %>% filter(n() == 1) #remove duplicate points = keep only diffusers
-    
-    jumps_year <- jumps_year %>% add_column(DistTosp = NA) #Create a column for the dist to the nearest other point
-    
-    if (dim(dataset_all)[1] == 0 | dim(jumps_year)[1] == 0){
-      next
-    } else {
-      # Create shapefiles with the two sets of points
-      dataset_diffusers_layer <- st_as_sf(x = dataset_diffusers, coords = c("longitude_rounded", "latitude_rounded"), crs = 4326, remove = F)
-      dataset_diffusers_proj <- st_transform(dataset_diffusers_layer, crs = 4326)
-      jumps_year_layer <- st_as_sf(x = jumps_year, coords = c("longitude_rounded", "latitude_rounded"), crs = 4326, remove = F)
-      jumps_year_proj <- st_transform(jumps_year_layer, crs = 4326)
+    # Check if potential jumps are real jumps by checking whether they are more than 
+    #  <gap size> away from any other previous point
+    if (dim(dataset_all)[1] == 0 | dim(jumps_year)[1] == 0){ 
+      next # if there are no potential jumps, go to the next year
+    } else { # if there are potential jumps this year,
+
+      #Calculate the pairwise distances between jumps from that year and all other points up to that year
+      for (jump in 1:length(jumps_year$DistToSLF)){ # for each potential jump
+       pairwise_dist <- geosphere::distGeo(jumps_year[jump,c('longitude', 'latitude')], dataset_diffusers[c('longitude', 'latitude')])/1000
+        jumps_year$DistToSLF[jump] <- min(pairwise_dist) # add the minimal distance to the table
+     }
       
-      #Calculate their pairwise distances
-      for (jump in 1:length(jumps_year_proj$DistTosp)){
-        pairwise_dist <- st_distance(x = jumps_year_proj[jump,], y = dataset_diffusers_proj)
-        jumps_year_proj$DistTosp[jump] <- min(pairwise_dist)
-      }
-      
-      #Select those at least 10 miles away from the others
-      st_geometry(jumps_year_proj) <- NULL
-      not_a_jump = jumps_year_proj %>% filter(DistTosp < gap_size*1000) 
-      newjumpers = jumps_year_proj %>% filter(DistTosp > gap_size*1000)
+      # Select jumps at least <gap size> away from all other points, these are potential new jumps
+      # sf::st_geometry(jumps_year_proj) <- NULL
+      newjumps = jumps_year %>% dplyr::filter(DistToSLF >= gap_size) # real new jumps
+      notajump = jumps_year %>% dplyr::filter(DistToSLF < gap_size) # not_a_jump are either close to the diffusion core or to a previous jump
     }
-    
-    
-    
-    #################################################################
-    ## PHASE 3: REITERATE PHASE 2 WITH POINTS DISCARDED AS JUMPS  ###
-    #################################################################
-    # Last precaution: re-iterate the analysis with points that were finally not jumps
+  
+
+    # notajump points may advance the core invasion front, which may remove other potential jumps, 
+    # so we need to reiterate the analysis with the new invasion front
     # until the dataset stabilises to a list of real jumps away from any other point
     
-    if (dim(newjumpers)[1] != 0){ #if jumpers are identified this year, let's check if they are true
+    if (dim(newjumps)[1] != 0){ # if there are still new jumps for this year, check them
       
-      while (dim(not_a_jump)[1] != 0){ # until we don't deny any more jumper
-        # Create shapefiles with the two sets of points
-        notajump_layer <- st_as_sf(x = not_a_jump, coords = c("longitude_rounded", "latitude_rounded"), crs = 4326, remove = F)
-        notajump_proj <- st_transform(notajump_layer, crs = 4326)
-        newjumpers_layer <- st_as_sf(x = newjumpers, coords = c("longitude_rounded", "latitude_rounded"), crs = 4326, remove = F)
-        newjumpers_proj <- st_transform(newjumpers_layer, crs = 4326)
-        
+      while (dim(notajump)[1] != 0){ # until we don't deny any more points as jumps
+     
         #Calculate their pairwise distances
-        for (jump in 1:length(newjumpers_proj$DistTosp)){
-          pairwise_dist <- st_distance(x = newjumpers_proj[jump,], y = notajump_proj)
-          newjumpers_proj$DistTosp[jump] <- min(pairwise_dist)
+        for (jump in 1:length(newjumps$DistToSLF)){
+          pairwise_dist <- geosphere::distGeo(newjumps[jump, c('longitude', 'latitude')], notajump[c('longitude', 'latitude')])/1000
+          newjumps$DistToSLF[jump] <- min(pairwise_dist)
         }
         
-        #Select those at least 10 miles away from the others
-        st_geometry(newjumpers_proj) <- NULL
-        not_a_jump = newjumpers_proj %>% filter(DistTosp < gap_size*1000)
-        newjumpers = newjumpers_proj %>% filter(DistTosp > gap_size*1000)
+        #Select those at least <gap size> away from all other points, these are potential new jumps
+        # sf::st_geometry(newjumps_proj) <- NULL
+        notajump = newjumps %>% dplyr::filter(DistToSLF < gap_size)
+        newjumps = newjumps %>% dplyr::filter(DistToSLF >= gap_size)
+        
       } 
     }
     
-    Jumps = bind_rows(Jumps, newjumpers) #add the final list of jumpers for each year
+    Jumps = dplyr::bind_rows(Jumps, newjumps) #add the final list of jumpers for each year
   }
+
   
-  results <- list("Dist" = Dist, "Jump" = Jumps)
+  # Select points that are potential thresholds or secondary diffusion
+  # i.e. were potential jumps but finally not jumps
+  potDiffusion = dplyr::setdiff(potJumps %>% dplyr::select(-nb_sectors, -sectors_nb), 
+                                Jumps %>% dplyr::select(-DistToSLF))
+  diffusers = dplyr::setdiff(grid_data %>% dplyr::filter(established == T), 
+                             Jumps %>% dplyr::select(-DistToSLF)) %>% 
+    dplyr::setdiff(potDiffusion)
+
+  cat(paste("Jump analysis done.", dim(Jumps)[1], "jumps were identified.\n"))
+  # select the results to return
+  results <- list("Jumps" = Jumps, "potDiffusion" = potDiffusion, "diffusers" = diffusers)
   
   return(results)
 } 
