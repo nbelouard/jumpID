@@ -110,8 +110,7 @@ find_thresholds <- function(dataset,
 
         # Case 2: no jump according to DistToIntro, but successive pairwise distances may be larger than
         # the difference in DistToIntro if DistToIntro is larger than limitRadius
-        # } else if (distancej > limitRadius){
-        } else {
+        } else if (distancej > limitRadius){
 
             # take the dataset without this point, only for this year
             dataset_test = dataset_s[-j,]

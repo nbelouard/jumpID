@@ -43,8 +43,20 @@ find_jumps <- function(grid_data = grid_data,
 
       #Calculate the pairwise distances between jumps from that year and all other points up to that year
       for (jump in 1:length(jumps_year$DistToSLF)){ # for each potential jump
-       pairwise_dist <- geosphere::distGeo(jumps_year[jump,c('longitude', 'latitude')], dataset_diffusers[c('longitude', 'latitude')])/1000
-        jumps_year$DistToSLF[jump] <- min(pairwise_dist) # add the minimal distance to the table
+        
+        # select only points within the DistToIntro to explore, to reduce computation time
+        dataset_diffusers_j <- dataset_diffusers %>% dplyr::filter(dplyr::between(DistToIntro,
+                                                                      as.numeric(jumps_year[jump,'DistToIntro']) - gap_size, 
+                                                                      as.numeric(jumps_year[jump,'DistToIntro'] + gap_size)))
+        
+        if (dim(dataset_diffusers_j)[1] > 0){
+          pairwise_dist <- geosphere::distGeo(jumps_year[jump,c('longitude', 'latitude')], 
+                                              dataset_diffusers_j[c('longitude', 'latitude')])/1000
+          jumps_year$DistToSLF[jump] <- min(pairwise_dist) # add the minimal distance to the table
+          } else {
+            jumps_year$DistToSLF[jump] <- gap_size # if no point is close, indicate the gap size
+        } 
+        
      }
       
       # Select jumps at least <gap size> away from all other points, these are potential new jumps
