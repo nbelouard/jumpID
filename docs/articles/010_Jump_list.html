@@ -52,7 +52,7 @@
       <a href="../articles/010_Jump_list.html">#1: Isolating dispersal jumps and diffusive spread</a>
     </li>
     <li>
-      <a href="../articles/011_Figures_jump_list.html">#1B Create the figures associated with the jump analysis</a>
+      <a href="../articles/011_Figures_jump_list.html">#1B Creating the figures associated with the jump analysis</a>
     </li>
     <li>
       <a href="../articles/020_Decreasing_calculation_time.html">#2: Decreasing calculation time</a>
@@ -86,7 +86,7 @@ spread</h1>
 Belouard<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>
 </h4>
             
-            <h4 data-toc-skip class="date">2024-08-13</h4>
+            <h4 data-toc-skip class="date">2024-08-14</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/nbelouard/jumpID/blob/HEAD/vignettes/010_Jump_list.Rmd" class="external-link"><code>vignettes/010_Jump_list.Rmd</code></a></small>
       <div class="hidden name"><code>010_Jump_list.Rmd</code></div>
@@ -316,7 +316,7 @@ faster.</p>
 <span>                             centroid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">75.675340</span>, <span class="fl">40.415240</span><span class="op">)</span></span>
 <span>                             <span class="co"># vector containing the centroid coordinates as long/lat</span></span>
 <span>                             <span class="op">)</span> </span></code></pre></div>
-<pre><code><span><span class="co">## 2024-08-13 12:31:48.519789 Start sector attribution... Sector attribution completed.</span></span></code></pre>
+<pre><code><span><span class="co">## 2024-08-14 19:04:50.121263 Start sector attribution... Sector attribution completed.</span></span></code></pre>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Map results</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">states</span><span class="op">)</span> <span class="op">+</span></span>
@@ -358,7 +358,7 @@ area.</p>
 <code class="sourceCode R"><span><span class="va">Results_thresholds</span> <span class="op">&lt;-</span> <span class="fu">jumpID</span><span class="fu">::</span><span class="fu"><a href="../reference/find_thresholds.html">find_thresholds</a></span><span class="op">(</span>dataset <span class="op">=</span> <span class="va">grid_data_sectors</span>, </span>
 <span>                                                gap_size <span class="op">=</span> <span class="fl">15</span>, </span>
 <span>                                                negatives <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## 2024-08-13 12:32:03.2554 Start finding thresholds... Sector 1/16...  2/16...  3/16...  4/16...  5/16...  6/16...  7/16...  8/16...  9/16...  10/16...  11/16...  12/16...  13/16...  14/16...  15/16...  16/16</span></span>
+<pre><code><span><span class="co">## 2024-08-14 19:05:05.853497 Start finding thresholds... Sector 1/16...  2/16...  3/16...  4/16...  5/16...  6/16...  7/16...  8/16...  9/16...  10/16...  11/16...  12/16...  13/16...  14/16...  15/16...  16/16</span></span>
 <span><span class="co">## Threshold analysis done. 4243 potential jumps were found.</span></span></code></pre>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Resulting objects are</span></span>
@@ -403,7 +403,7 @@ final list of jumps is obtained in the object <code>Jumps</code>.</gap></p>
 <code class="sourceCode R"><span><span class="va">Results_jumps</span> <span class="op">&lt;-</span> <span class="fu">jumpID</span><span class="fu">::</span><span class="fu"><a href="../reference/find_jumps.html">find_jumps</a></span><span class="op">(</span>grid_data <span class="op">=</span> <span class="va">grid_data</span>, </span>
 <span>                       potJumps <span class="op">=</span> <span class="va">Results_thresholds</span><span class="op">$</span><span class="va">potJumps</span>,</span>
 <span>                       gap_size <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## 2024-08-13 12:39:06.512792 Start finding jumps... Year 2014 ... Year 2015 ... Year 2016 ... Year 2017 ... Year 2018 ... Year 2019 ... Year 2020 ... Year 2021 ... Year 2022 ... Jump analysis done. 387 jumps were identified.</span></span></code></pre>
+<pre><code><span><span class="co">## 2024-08-14 19:11:11.257618 Start finding jumps... Year 2014 ... Year 2015 ... Year 2016 ... Year 2017 ... Year 2018 ... Year 2019 ... Year 2020 ... Year 2021 ... Year 2022 ... Jump analysis done. 387 jumps were identified.</span></span></code></pre>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Resulting objects are:</span></span>
 <span><span class="co">#- Results_jumps$Jumps, a data frame containing all jumps</span></span>
@@ -450,7 +450,7 @@ point.</p>
 <span>                                diffusers <span class="op">=</span> <span class="va">Results_jumps</span><span class="op">$</span><span class="va">diffusers</span>,</span>
 <span>                                Dist <span class="op">=</span> <span class="va">Results_thresholds</span><span class="op">$</span><span class="va">preDist</span>,</span>
 <span>                                gap_size <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## 2024-08-13 12:46:09.446915 Start finding secondary diffusion... Year 2017 ...Year 2018 ...Year 2019 ...Year 2020 ...Year 2021 ...Year 2022 ...Analysis of secondary diffusion done.</span></span></code></pre>
+<pre><code><span><span class="co">## 2024-08-14 19:11:56.374925 Start finding secondary diffusion... Year 2017 ...Year 2018 ...Year 2019 ...Year 2020 ...Year 2021 ...Year 2022 ...Analysis of secondary diffusion done.</span></span></code></pre>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Resulting objects are:</span></span>
 <span><span class="co">#- Results_secDiff$secDiff, a data frame of all cells that are secondary diffusion </span></span>
@@ -491,11 +491,11 @@ function.</p>
 <span>                                              centroid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">75.675340</span>, <span class="fl">40.415240</span><span class="op">)</span>,</span>
 <span>                                              gap_size <span class="op">=</span> <span class="fl">15</span>,</span>
 <span>                                              negatives <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## 2024-08-13 12:47:27.374038 Start sector attribution... Sector attribution completed. </span></span>
-<span><span class="co">## 2024-08-13 12:47:27.414296 Start finding thresholds... Sector 1/16...  2/16...  3/16...  4/16...  5/16...  6/16...  7/16...  8/16...  9/16...  10/16...  11/16...  12/16...  13/16...  14/16...  15/16...  16/16</span></span>
+<pre><code><span><span class="co">## 2024-08-14 19:13:13.971088 Start sector attribution... Sector attribution completed. </span></span>
+<span><span class="co">## 2024-08-14 19:13:14.00776 Start finding thresholds... Sector 1/16...  2/16...  3/16...  4/16...  5/16...  6/16...  7/16...  8/16...  9/16...  10/16...  11/16...  12/16...  13/16...  14/16...  15/16...  16/16</span></span>
 <span><span class="co">## Threshold analysis done. 4243 potential jumps were found. </span></span>
-<span><span class="co">## 2024-08-13 12:53:57.988004 Start finding jumps... Year 2014 ... Year 2015 ... Year 2016 ... Year 2017 ... Year 2018 ... Year 2019 ... Year 2020 ... Year 2021 ... Year 2022 ... Jump analysis done. 387 jumps were identified.</span></span>
-<span><span class="co">## 2024-08-13 13:00:35.273018 Start finding secondary diffusion... Year 2017 ...Year 2018 ...Year 2019 ...Year 2020 ...Year 2021 ...Year 2022 ...Analysis of secondary diffusion done.</span></span></code></pre>
+<span><span class="co">## 2024-08-14 19:19:42.800389 Start finding jumps... Year 2014 ... Year 2015 ... Year 2016 ... Year 2017 ... Year 2018 ... Year 2019 ... Year 2020 ... Year 2021 ... Year 2022 ... Jump analysis done. 387 jumps were identified.</span></span>
+<span><span class="co">## 2024-08-14 19:26:21.805724 Start finding secondary diffusion... Year 2017 ...Year 2018 ...Year 2019 ...Year 2020 ...Year 2021 ...Year 2022 ...Analysis of secondary diffusion done.</span></span></code></pre>
 <div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># save resulting objects </span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html" class="external-link">write.csv</a></span><span class="op">(</span><span class="va">jumps_wrapper</span><span class="op">$</span><span class="va">Dist</span>, </span>

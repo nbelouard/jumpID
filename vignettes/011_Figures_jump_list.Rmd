@@ -1,5 +1,5 @@
 ---
-title: "#1B Create the figures associated with the jump analysis"
+title: "#1B Creating the figures associated with the jump analysis"
 author: 
 - Nadege Belouard^[iEco lab at Temple University, Ecobio lab at the University of Rennes, nadege.belouard@gmail.com]
 - Isabella G. Smith^[iEco lab at Temple University]
@@ -7,10 +7,14 @@ date: "`r Sys.Date()`"
 output:
   pdf_document:
     toc: TRUE
-    toc_depth: 2
+    toc_depth: 3
   html_document:
     toc: TRUE
     toc_depth: 3
+  rmarkdown::html_document:
+    toc: true
+    toc_depth: 3   
+    toc_float: true 
 params:
   display: FALSE
   run: TRUE
