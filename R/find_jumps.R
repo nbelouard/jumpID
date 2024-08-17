@@ -72,7 +72,7 @@ find_jumps <- function(grid_data = grid_data,
     
     if (dim(newjumps)[1] != 0){ # if there are still new jumps for this year, check them
       
-      while (dim(notajump)[1] != 0){ # until we don't deny any more points as jumps
+      while (dim(notajump)[1] != 0 & dim(newjumps)[1] != 0){ # until we don't deny any more points as jumps
      
         #Calculate their pairwise distances
         for (jump in 1:length(newjumps$DistToSLF)){

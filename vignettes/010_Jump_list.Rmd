@@ -45,7 +45,7 @@ We load this dataset that contains all the occurrences of the spotted lanternfly
 ```{r load data}
 
 slf <- read.csv(file.path(here::here(), "data", "lyde_data_v2", "lyde.csv"))
-slf %<>% select(bio_year, latitude, longitude, lyde_established)
+slf %<>% select(bio_year, latitude, longitude, lyde_established) 
 tibble::tibble(slf)
 ```
 
@@ -57,11 +57,13 @@ The dataset contains 831,039 rows, each corresponding to a SLF survey at a speci
 
 # 2. Data formatting
 
-First, to use the `jumpID` package, we need to rename the columns with generic names expected by the package.
+First, to use the `jumpID` package, we need to rename the columns with generic names expected by the package. We also remove rows where the SLF establishment is NA.
+
 ```{r rename columns}
 
 slf %<>% rename(year = bio_year,
-                established = lyde_established)
+                established = lyde_established) %>% 
+  filter(is.na(established) == F)
 ```
 
 
@@ -79,7 +81,7 @@ grid_data <- slf %>%
 tibble::tibble(grid_data)
 ```
 
-The dataset now has 130,015 rows, corresponding to `r length(unique(grid_data$latitude))` x `r length(unique(grid_data$longitude))` cells. Let's look at these data on a map.
+The dataset now has 123,532 rows, corresponding to `r length(unique(grid_data$latitude))` x `r length(unique(grid_data$longitude))` cells. Let's look at these data on a map.
 
 ```{r create US map, fig.height = 10, fig.width = 10, messages = FALSE, warnings = FALSE}
 

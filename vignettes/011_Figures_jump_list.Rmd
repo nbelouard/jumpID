@@ -142,14 +142,40 @@ ggsave(file.path(here::here(), "figures", "1B. number of jumps.jpg"),
 Show the distance between the invasion front and jumps every year. This variable is stored in the DistToSLF column.  
 ```{r dist to front per year, fig.height = 2.5, fig.width = 4}
 
+# 1. select all diffusion points
+diffusion <- setdiff(grid_data %>% filter(established == T), 
+                        Jumps %>% select(year, latitude, longitude, established, DistToIntro)) %>% # remove jumps from grid data
+  setdiff(secDiffusion) # remove secondary diffusion too
+
+diffusion_rarefied <- setdiff(grid_data %>% filter(established == T), 
+                        Jump_clusters %>% select(year, latitude, longitude, established, DistToIntro)) %>% # remove jump clusters from grid data
+  setdiff(secDiffusion) # remove secondary diffusion too
+
+
+#2. calculate jump distance for each jump
+for (jump in 1:length(Jumps$DistToIntro)){ #for each jump
+  y = Jumps[jump,'year']
+  diffusion_y <- diffusion %>% filter(year == y)
+  pairwise_dist <- geosphere::distGeo(diffusion_y[,c('longitude','latitude')], Jumps[jump,c('longitude','latitude')])/1000
+  Jumps$DistToFront[jump] = min(pairwise_dist) 
+}
+ 
+for (jump in 1:length(Jump_clusters$DistToIntro)){ #for each jump
+  y = Jump_clusters[jump,'year']
+  diffusion_y <- diffusion %>% filter(year == y)
+  pairwise_dist <- geosphere::distGeo(diffusion_y[,c('longitude','latitude')], Jump_clusters[jump,c('longitude','latitude')])/1000
+  Jump_clusters$DistToFront[jump] = min(pairwise_dist) 
+} 
+
+
 MeanDist_jump <- ggplot() +
   geom_boxplot(data = Jumps, show.legend = F,
-               aes(x = Type, y = DistToSLF/1000, 
+               aes(x = Type, y = DistToFront, 
                    col = as.factor(year),
                    fill = as.factor(year)),
                alpha = 0.7) +
   geom_boxplot(data = Jump_clusters, show.legend = F,
-               aes(x = Type, y = DistToSLF/1000, 
+               aes(x = Type, y = DistToFront, 
                    col = as.factor(year),
                    fill = as.factor(year)),
                alpha = 0, outlier.alpha = 0.7) +
@@ -294,17 +320,17 @@ diff <- setdiff(diff_secDiff, secDiffusion) # remove secondary diffusion
 
 for (jump in 1:length(Jumps_2021$DistToIntro)){ #for each jump
   # is this jump within 15 km of any diffusion point the year after? ie. caught up by diffusion
-  testDiff <- diff %>% filter(year %in% c(min(Jumps_2021$year), Jumps_2021$year[jump]+1))
-  pairwise_dist <- geosphere::distGeo(testDiff[,c(3,2)], Jumps_2021[jump,c(4,3)])/1000
+  testDiff <- diff %>% filter(year == Jumps_2021$year[jump]+1)
+  pairwise_dist <- geosphere::distGeo(testDiff[,c('longitude','latitude')], Jumps_2021[jump,c('longitude','latitude')])/1000
   
-  if (min(pairwise_dist) < 15){ Jumps_2021$secDiff[jump] = "caught up" 
+  if (min(pairwise_dist) < 15){ Jumps_2021$secDiff[jump] = "enveloped" 
   } else {
   # is there secondary diffusion within 15 km the year after?
   # calculate pairwise distance with secDiff the year after
     testSecDiff <- secDiffusion %>% filter(year == Jumps_2021$year[jump]+1)
     if (dim(testSecDiff)[1] > 0){
     # check distances
-      pairwise_dist <- geosphere::distGeo(testSecDiff[,c(4,3)], Jumps_2021[jump,c(4,3)])/1000
+      pairwise_dist <- geosphere::distGeo(testSecDiff[,c('longitude','latitude')], Jumps_2021[jump,c('longitude','latitude')])/1000
       Jumps_2021$secDiff[jump] = ifelse(min(pairwise_dist) < 15, "yes", "no")
     }
   }
@@ -316,7 +342,7 @@ Jumps_secDiff <- Jumps_2021 %>%
   ungroup()
 
 Jumps_secDiff$secDiff <- factor(Jumps_secDiff$secDiff, 
-                                levels = c("caught up", "no", "yes"))
+                                levels = c("enveloped", "no", "yes"))
 
 
 #Bar Plot
@@ -340,7 +366,7 @@ Jumps_secDiff_plot <- ggplot() +
   xlab("Year of Jump") +
   ylab("Number of Jumps") +
   guides(alpha = guide_legend(
-    paste0("Followed by", "\n",  "secondary diffusion"),
+    paste0("Sec. diffusion after jump"),
     override.aes = list(fill = "black", color = "black", linetype = 1, shape = 21))) +
   theme(legend.title = element_text(size = 20),
         legend.text = element_text(size = 16),
@@ -473,6 +499,8 @@ ggsave(file.path(here::here(), "figures", "S1B. zoomed_points.jpg"),
 Show the evolution of the sampling effort and jump occurrences over time  
 ```{r figure sampling effort, fig.width = 7, fig.height = 5}
 
+slf %<>% filter(!is.na(lyde_established))
+
 surveys <- as.data.frame(table(slf$bio_year)) %>% 
   mutate(Type = "Surveys") %>% 
   rename(year = Var1, n = Freq)
@@ -499,10 +527,12 @@ effort$Type <- factor(effort$Type,
                                  "Dispersal jumps", "Jump clusters"))
 
 effort_plot <- ggplot() +
-  geom_point(data = effort, aes(x = year, y = log(n), shape = Type), 
+  geom_point(data = effort, aes(x = year, y = n, shape = Type), 
              size = 3) +
   theme_classic() +
-  xlab("Year") + ylab("log(count)")
+  scale_y_log10() + 
+  xlab("Year") + ylab("Number of surveys") +
+  guides(shape = guide_legend("Survey type"))
   
 effort_plot
 

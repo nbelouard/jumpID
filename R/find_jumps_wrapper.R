@@ -28,25 +28,25 @@ find_jumps_wrapper <- function(dataset = grid_data,
   
                          
   #1 Attribute sectors
-  grid_data_sectors <- slfjumps::attribute_sectors(dataset = grid_data, # dataset to be explored
+  grid_data_sectors <- jumpID::attribute_sectors(dataset = grid_data, # dataset to be explored
                                                    nb_sectors = nb_sectors, # number of sectors to divide the invasion range
                                                    centroid = centroid) # vector containing the centroid coordinates as long/lat
   
   
     #2 Find thresholds
-  Results_thresholds <- slfjumps::find_thresholds(dataset = grid_data_sectors, 
+  Results_thresholds <- jumpID::find_thresholds(dataset = grid_data_sectors, 
                                                   gap_size = gap_size, 
                                                   negatives = negatives)
 
   
   #3 Find jumps
-  Results_jumps <- slfjumps::find_jumps(grid_data = grid_data, 
+  Results_jumps <- jumpID::find_jumps(grid_data = grid_data, 
                                         potJumps = Results_thresholds$potJumps,
                                         gap_size = gap_size)
   
   
   #4 Find sec diff
-  Results_secDiff <- slfjumps::find_secDiff(potDiffusion = Results_jumps$potDiffusion,
+  Results_secDiff <- jumpID::find_secDiff(potDiffusion = Results_jumps$potDiffusion,
                                             Jumps = Results_jumps$Jumps,
                                             diffusers = Results_jumps$diffusers,
                                             Dist = Results_thresholds$preDist,
