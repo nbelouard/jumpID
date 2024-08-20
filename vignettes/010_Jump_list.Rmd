@@ -201,9 +201,10 @@ The input dataset is the output of attribute_sectors(). The `gap_size` parameter
 If the option "negatives" is set to TRUE (default), the function will check that there are negative surveys in the discontinuity, so that the absence of SLF established is not due to an absence of surveys in the area.
 
 ```{r discover find_thresholds, fig.height = 10, fig.width = 10}
+gap_size = 15 
 
 Results_thresholds <- jumpID::find_thresholds(dataset = grid_data_sectors, 
-                                                gap_size = 15, 
+                                                gap_size = gap_size, 
                                                 negatives = T)
 
 # Resulting objects are
@@ -242,7 +243,7 @@ The function `find_jumps()` prunes the list of potential jumps of cells that are
 
 Results_jumps <- jumpID::find_jumps(grid_data = grid_data, 
                        potJumps = Results_thresholds$potJumps,
-                       gap_size = 15)
+                       gap_size = gap_size)
 
 # Resulting objects are:
 #- Results_jumps$Jumps, a data frame containing all jumps
@@ -284,7 +285,7 @@ Results_secDiff <- jumpID::find_secDiff(potDiffusion = Results_jumps$potDiffusio
                                 Jumps = Results_jumps$Jumps,
                                 diffusers = Results_jumps$diffusers,
                                 Dist = Results_thresholds$preDist,
-                                gap_size = 15)
+                                gap_size = gap_size)
 
 # Resulting objects are:
 #- Results_secDiff$secDiff, a data frame of all cells that are secondary diffusion 
@@ -292,9 +293,9 @@ Results_secDiff <- jumpID::find_secDiff(potDiffusion = Results_jumps$potDiffusio
 #- Results_secDiff$Dist, a data frame of all extreme points on the invasion front (thresholds)
 
 # We extract all diffusion points from the original dataset (points that are neither jumps or secondary diffusion)
-diffusion <- setdiff(grid_data %>% filter(established == T),
+diffusion <- dplyr::setdiff(grid_data %>% filter(established == T),
                      Results_jumps$Jumps %>% select(-DistToSLF)) %>% 
-  setdiff(., Results_secDiff$secDiff)
+  dplyr::setdiff(Results_secDiff$secDiff)
 
 # Make a single object for the map
 secDiff_map <- dplyr::bind_rows(diffusion %>% 
@@ -335,6 +336,8 @@ jumps_wrapper <- jumpID::find_jumps_wrapper(dataset = grid_data,
                                               negatives = T)
 
 # save resulting objects 
+write.csv(jumps_wrapper$Dist, 
+          file.path(here::here(), "exported-data", "thresholds.csv"), row.names = F)
 write.csv(jumps_wrapper$diffusion, 
           file.path(here::here(), "exported-data", "diffusion.csv"), row.names = F)
 write.csv(jumps_wrapper$Jumps, 

@@ -54,9 +54,9 @@ find_jumps_wrapper <- function(dataset = grid_data,
   
   # Extract all diffusion points from the original dataset 
   # (points that are neither jumps or secondary diffusion)
-  diffusion <- as.data.frame(setdiff(grid_data %>% filter(established == T),
+  diffusion <- dplyr::setdiff(grid_data %>% filter(established == T),
                        Results_jumps$Jumps %>% select(-DistToSLF)) %>% 
-    setdiff(., Results_secDiff$secDiff))
+    dplyr::setdiff(Results_secDiff$secDiff)
 
 
   # select the results to return

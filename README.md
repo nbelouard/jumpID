@@ -1,10 +1,14 @@
-# jumpID: an R package to differentiate diffusive spread and dispersal jumps in biological invasions
+---
+title: jumpID, an R package to differentiate diffusive spread and dispersal jumps in biological invasions
+---
 
 ## Description
 
 While most dispersal events occur over short distances and result in a continuous species range, human-assisted dispersal promotes the occurrence of dispersal "jumps", and the establishment of satellite populations away from the core of the invasion. Distinguishing diffusive spread and jump dispersal is important to understand the process of invasion, its evolution, but also to take efficient management measures. Through a directional analysis of species occurrence data, the `jumpID` R package differentiates diffusive spread and dispersal jumps in biological invasions, and identifies secondary diffusion stemming from dispersal jumps. `jumpID` is presented as a GitHub R package applied to the example of the invasion of the spotted lanternfly in the United States.  
 
-<< here add graphical abstract/workflow figure >>  
+<p align = "center">
+<img src="man/figures/2. jump_description.jpg" alt = "workflow of jumpID" width = "500"/>  
+</p>
 
 The spotted lanternfly, *Lycorma delicatula* (hereafter SLF) is an insect from China that is an invasive pest in the US. Since the initial detection of SLF in Pennsylvania in 2014, large-scale surveys were conducted to trace the progression of the invasion. A unique dataset summarizing SLF presence and absence in the US is available in the `lydemapr` R package and constitutes an opportunity to study the spread of the SLF.  
 
