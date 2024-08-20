@@ -25,8 +25,8 @@ necessary for it to be considered a jump, in kilometers (default: 15)}
 \item{negatives}{Should negative surveys be considered? (default: TRUE)}
 }
 \value{
-Three data frames: \code{Jumps} containing all jumps, \code{Dist} containing the 
-limits of the diffusive spread, and \code{secDiff} containing secondary diffusion cells
+Four data frames: \code{Jumps} containing all jumps, \code{Dist} containing the 
+limits of the diffusive spread, \code{diffusion} containing all diffusion points, and \code{secDiff} containing secondary diffusion cells
 }
 \description{
 Find dispersal jumps after having applied find_thresholds(). Prune points selected due to sector limits and secondary diffusion.

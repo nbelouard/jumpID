@@ -47,6 +47,7 @@ centroid <- data.frame(longitude_rounded = -75.675340, latitude_rounded = 40.415
 Jumps <- read.csv(file.path(here::here(), "exported-data", "jumps.csv"))
 Jump_clusters <- read.csv(file.path(here::here(), "exported-data", "jump_clusters.csv"))
 Thresholds <- read.csv(file.path(here::here(), "exported-data", "thresholds.csv"))
+diffusion <- read.csv(file.path(here::here(), "exported-data", "diffusion.csv"))
 secDiffusion <- read.csv(here::here("exported-data", "secdiffusion.csv"))
 ```
 
@@ -142,11 +143,8 @@ ggsave(file.path(here::here(), "figures", "1B. number of jumps.jpg"),
 Show the distance between the invasion front and jumps every year. This variable is stored in the DistToSLF column.  
 ```{r dist to front per year, fig.height = 2.5, fig.width = 4}
 
-# 1. select all diffusion points
-diffusion <- setdiff(grid_data %>% filter(established == T), 
-                        Jumps %>% select(year, latitude, longitude, established, DistToIntro)) %>% # remove jumps from grid data
-  setdiff(secDiffusion) # remove secondary diffusion too
-
+# 1. select all diffusion points for the rarefied jump dataset
+# (we already have the diffusion dataset for the full dataset)
 diffusion_rarefied <- setdiff(grid_data %>% filter(established == T), 
                         Jump_clusters %>% select(year, latitude, longitude, established, DistToIntro)) %>% # remove jump clusters from grid data
   setdiff(secDiffusion) # remove secondary diffusion too
@@ -406,10 +404,8 @@ Visualize all results, faceted by year
 # Make a single object for the map
 jumps_wrapper_map <- dplyr::bind_rows(grid_data %>% filter(established == F) %>%
                                         dplyr::mutate(Type = "SLF not established"),
-                                      grid_data %>% filter(established == T) %>%
-                                        dplyr::mutate(Type = "SLF established"),
-                                      Thresholds %>% 
-                                        dplyr::mutate(Type = "Diffusion threshold"),
+                                      diffusion %>%
+                                        dplyr::mutate(Type = "Diffusion"),
                        Jumps %>% dplyr::mutate(Type = "Jump"),
                        secDiffusion %>% dplyr::mutate(Type = "Secondary diffusion"))
 
@@ -419,7 +415,7 @@ facetedResults <- ggplot(data = states) +
   facet_wrap(~year) +
   theme(legend.position = "bottom") +
   theme_classic() +
-  scale_color_manual(values = c("blue", "green", "orange", "gray30", "gray90")) +
+  scale_color_manual(values = c("blue", "green", "orange", "gray90")) +
   xlab("Longitude") + ylab("Latitude") + labs(col = "Identification") +
   coord_sf(xlim = c(-82, -72), ylim = c(38, 43), expand = FALSE) +
   theme(legend.position = "right", text = element_text(size = 10),

@@ -291,9 +291,14 @@ Results_secDiff <- jumpID::find_secDiff(potDiffusion = Results_jumps$potDiffusio
 # from a previous jump
 #- Results_secDiff$Dist, a data frame of all extreme points on the invasion front (thresholds)
 
+# We extract all diffusion points from the original dataset (points that are neither jumps or secondary diffusion)
+diffusion <- setdiff(grid_data %>% filter(established == T),
+                     Results_jumps$Jumps %>% select(-DistToSLF)) %>% 
+  setdiff(., Results_secDiff$secDiff)
+
 # Make a single object for the map
-secDiff_map <- dplyr::bind_rows(Results_secDiff$Dist %>% 
-                                  mutate(Type = "Diffusion threshold"),
+secDiff_map <- dplyr::bind_rows(diffusion %>% 
+                                  mutate(Type = "Diffusion"),
                                 Results_jumps$Jumps %>% 
                                   mutate(Type = "Jump"),
                                 Results_secDiff$secDiff %>% 
@@ -330,8 +335,8 @@ jumps_wrapper <- jumpID::find_jumps_wrapper(dataset = grid_data,
                                               negatives = T)
 
 # save resulting objects 
-write.csv(jumps_wrapper$Dist, 
-          file.path(here::here(), "exported-data", "thresholds.csv"), row.names = F)
+write.csv(jumps_wrapper$diffusion, 
+          file.path(here::here(), "exported-data", "diffusion.csv"), row.names = F)
 write.csv(jumps_wrapper$Jumps, 
           file.path(here::here(), "exported-data", "jumps.csv"), row.names = F)
 write.csv(jumps_wrapper$secDiff, 
@@ -342,8 +347,8 @@ We plot the results on a map.
 ```{r map results, fig.height = 10, fig.width = 10}
 
 # Make a single object for the map
-jumps_wrapper_map <- dplyr::bind_rows(jumps_wrapper$Dist %>% 
-                                        dplyr::mutate(Type = "Diffusion threshold"),
+jumps_wrapper_map <- dplyr::bind_rows(jumps_wrapper$diffusion %>% 
+                                        dplyr::mutate(Type = "Diffusion"),
                                       jumps_wrapper$Jumps %>% 
                                         dplyr::mutate(Type = "Jump"),
                                       jumps_wrapper$secDiff %>% 

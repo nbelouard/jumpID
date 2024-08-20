@@ -11,8 +11,8 @@
 #'necessary for it to be considered a jump, in kilometers (default: 15)
 #'@param negatives Should negative surveys be considered? (default: TRUE)
 #'
-#'@return Three data frames: \code{Jumps} containing all jumps, \code{Dist} containing the 
-#'limits of the diffusive spread, and \code{secDiff} containing secondary diffusion cells
+#'@return Four data frames: \code{Jumps} containing all jumps, \code{Dist} containing the 
+#'limits of the diffusive spread, \code{diffusion} containing all diffusion points, and \code{secDiff} containing secondary diffusion cells
 #'
 #'@examples
 #'\dontrun{
@@ -33,7 +33,7 @@ find_jumps_wrapper <- function(dataset = grid_data,
                                                    centroid = centroid) # vector containing the centroid coordinates as long/lat
   
   
-    #2 Find thresholds
+  #2 Find thresholds
   Results_thresholds <- jumpID::find_thresholds(dataset = grid_data_sectors, 
                                                   gap_size = gap_size, 
                                                   negatives = negatives)
@@ -51,10 +51,17 @@ find_jumps_wrapper <- function(dataset = grid_data,
                                             diffusers = Results_jumps$diffusers,
                                             Dist = Results_thresholds$preDist,
                                             gap_size = gap_size)
+  
+  # Extract all diffusion points from the original dataset 
+  # (points that are neither jumps or secondary diffusion)
+  diffusion <- as.data.frame(setdiff(grid_data %>% filter(established == T),
+                       Results_jumps$Jumps %>% select(-DistToSLF)) %>% 
+    setdiff(., Results_secDiff$secDiff))
 
 
   # select the results to return
   results <- list("Dist" = Results_secDiff$Dist, 
+                  "diffusion" = diffusion,
                   "Jumps" = Results_jumps$Jumps, 
                   "secDiff" = Results_secDiff$secDiff)
   
