@@ -478,15 +478,15 @@ and jump dispersal.</p>
 <span>  <span class="co"># add it to the table</span></span>
 <span>  <span class="va">thresholdMaxSector</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">thresholdMaxSector</span>, <span class="va">thresholdMaxSectorYear</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<pre><code><span><span class="co">## 2024-08-21 10:58:38.118174 Start sector attribution... Sector attribution completed. </span></span>
-<span><span class="co">## 2024-08-21 10:58:38.136096 Start sector attribution... Sector attribution completed. </span></span>
-<span><span class="co">## 2024-08-21 10:58:38.154029 Start sector attribution... Sector attribution completed. </span></span>
-<span><span class="co">## 2024-08-21 10:58:38.168808 Start sector attribution... Sector attribution completed. </span></span>
-<span><span class="co">## 2024-08-21 10:58:38.183415 Start sector attribution... Sector attribution completed. </span></span>
-<span><span class="co">## 2024-08-21 10:58:38.198269 Start sector attribution... Sector attribution completed. </span></span>
-<span><span class="co">## 2024-08-21 10:58:38.213247 Start sector attribution... Sector attribution completed. </span></span>
-<span><span class="co">## 2024-08-21 10:58:38.227905 Start sector attribution... Sector attribution completed. </span></span>
-<span><span class="co">## 2024-08-21 10:58:38.242968 Start sector attribution... Sector attribution completed.</span></span></code></pre>
+<pre><code><span><span class="co">## 2024-08-21 11:51:39.89624 Start sector attribution... Sector attribution completed. </span></span>
+<span><span class="co">## 2024-08-21 11:51:39.911515 Start sector attribution... Sector attribution completed. </span></span>
+<span><span class="co">## 2024-08-21 11:51:39.926109 Start sector attribution... Sector attribution completed. </span></span>
+<span><span class="co">## 2024-08-21 11:51:39.940756 Start sector attribution... Sector attribution completed. </span></span>
+<span><span class="co">## 2024-08-21 11:51:39.955412 Start sector attribution... Sector attribution completed. </span></span>
+<span><span class="co">## 2024-08-21 11:51:39.969986 Start sector attribution... Sector attribution completed. </span></span>
+<span><span class="co">## 2024-08-21 11:51:39.984774 Start sector attribution... Sector attribution completed. </span></span>
+<span><span class="co">## 2024-08-21 11:51:40.00031 Start sector attribution... Sector attribution completed. </span></span>
+<span><span class="co">## 2024-08-21 11:51:40.015613 Start sector attribution... Sector attribution completed.</span></span></code></pre>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># do the same thing for jumps</span></span>
 <span><span class="co"># calculate max radius for jumps</span></span>
@@ -506,12 +506,12 @@ and jump dispersal.</p>
 <span>  </span>
 <span>  <span class="va">jumpMaxSector</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">jumpMaxSector</span>, <span class="va">jumpsMaxSectorYear</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<pre><code><span><span class="co">## 2024-08-21 10:58:38.275765 Start sector attribution... Sector attribution completed. </span></span>
-<span><span class="co">## 2024-08-21 10:58:38.290229 Start sector attribution... Sector attribution completed. </span></span>
-<span><span class="co">## 2024-08-21 10:58:38.305156 Start sector attribution... Sector attribution completed. </span></span>
-<span><span class="co">## 2024-08-21 10:58:38.319724 Start sector attribution... Sector attribution completed. </span></span>
-<span><span class="co">## 2024-08-21 10:58:38.334586 Start sector attribution... Sector attribution completed. </span></span>
-<span><span class="co">## 2024-08-21 10:58:38.349321 Start sector attribution... Sector attribution completed.</span></span></code></pre>
+<pre><code><span><span class="co">## 2024-08-21 11:51:40.047125 Start sector attribution... Sector attribution completed. </span></span>
+<span><span class="co">## 2024-08-21 11:51:40.06168 Start sector attribution... Sector attribution completed. </span></span>
+<span><span class="co">## 2024-08-21 11:51:40.07621 Start sector attribution... Sector attribution completed. </span></span>
+<span><span class="co">## 2024-08-21 11:51:40.090972 Start sector attribution... Sector attribution completed. </span></span>
+<span><span class="co">## 2024-08-21 11:51:40.105787 Start sector attribution... Sector attribution completed. </span></span>
+<span><span class="co">## 2024-08-21 11:51:40.120721 Start sector attribution... Sector attribution completed.</span></span></code></pre>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># we combine thresholds and jumps to get the "all spread" dataset</span></span>
 <span><span class="va">allMaxSector</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">thresholdMaxSector</span>, <span class="va">jumpMaxSector</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>

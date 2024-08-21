@@ -1,15 +1,3 @@
----
-title: "jumpID, an R package to differentiate diffusive spread and dispersal jumps in biological invasions"
-author: 
-- Nadege Belouard^[iEco lab at Temple University, Ecobio lab at the University of Rennes, nadege.belouard@gmail.com]
-date: "`r Sys.Date()`"
-output: 
-  html_document:
-    theme: cosmo
-    toc: TRUE
-    toc_float: TRUE
-    toc_depth: 3
----
 # jumpID, an R package to differentiate diffusive spread and dispersal jumps in biological invasions
 
 ## Description
