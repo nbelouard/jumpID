@@ -1,6 +1,16 @@
 ---
-title: jumpID, an R package to differentiate diffusive spread and dispersal jumps in biological invasions
+title: "jumpID, an R package to differentiate diffusive spread and dispersal jumps in biological invasions"
+author: 
+- Nadege Belouard^[iEco lab at Temple University, Ecobio lab at the University of Rennes, nadege.belouard@gmail.com]
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    theme: cosmo
+    toc: TRUE
+    toc_float: TRUE
+    toc_depth: 3
 ---
+# jumpID, an R package to differentiate diffusive spread and dispersal jumps in biological invasions
 
 ## Description
 
@@ -52,4 +62,4 @@ The functions are now ready to use, and the help file is accessible by typing ?f
 
 ## Citation
 
-N. Belouard, S. De Bona, M.R. Helmus,  I.G. Smith, J.E. Behm, 2024. Identifying jump dispersal locations from Big Data on invasive species spread: the case of the spotted lanternfly *Lycorma delicatula*. https://nbelouard.github.io/jumpID 
+N. Belouard, S. De Bona, M.R. Helmus,  I.G. Smith, J.E. Behm, 2024. Identifying jump dispersal locations from occurrence data on invasive species spread: the case of the spotted lanternfly *Lycorma delicatula*. https://ieco-lab.github.io/jumpID 

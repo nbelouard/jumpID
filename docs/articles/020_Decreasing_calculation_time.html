@@ -85,7 +85,7 @@
 Belouard<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>
 </h4>
             
-            <h4 data-toc-skip class="date">2024-08-14</h4>
+            <h4 data-toc-skip class="date">2024-08-21</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/nbelouard/jumpID/blob/HEAD/vignettes/020_Decreasing_calculation_time.Rmd" class="external-link"><code>vignettes/020_Decreasing_calculation_time.Rmd</code></a></small>
       <div class="hidden name"><code>020_Decreasing_calculation_time.Rmd</code></div>
@@ -147,95 +147,77 @@ compare computation times.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Sectors: "</span>, <span class="va">s</span><span class="op">)</span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="co">#1 Attribute sectors</span></span>
-<span>  <span class="va">start.time.attribute_sectors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="va">start.time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
 <span>  <span class="va">grid_data_sectors</span> <span class="op">&lt;-</span> <span class="fu">jumpID</span><span class="fu">::</span><span class="fu"><a href="../reference/attribute_sectors.html">attribute_sectors</a></span><span class="op">(</span>dataset <span class="op">=</span> <span class="va">grid_data</span>, </span>
 <span>                                                   nb_sectors <span class="op">=</span> <span class="va">s</span>, </span>
 <span>                                                   centroid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">75.675340</span>, <span class="fl">40.415240</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="va">end.time.attribute_sectors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>  <span class="va">time.taken.attribute_sectors</span> <span class="op">&lt;-</span> <span class="va">end.time.attribute_sectors</span> <span class="op">-</span> <span class="va">start.time.attribute_sectors</span></span>
 <span>  </span>
 <span>  </span>
 <span>  </span>
 <span>  <span class="co">#2 Find thresholds</span></span>
-<span>  <span class="va">start.time.find_thresholds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
 <span>  <span class="va">Results_thresholds</span> <span class="op">&lt;-</span> <span class="fu">jumpID</span><span class="fu">::</span><span class="fu"><a href="../reference/find_thresholds.html">find_thresholds</a></span><span class="op">(</span>dataset <span class="op">=</span> <span class="va">grid_data_sectors</span>, </span>
 <span>                                                  gap_size <span class="op">=</span> <span class="fl">15</span>, </span>
 <span>                                                  negatives <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
 <span>  <span class="va">preDist</span> <span class="op">&lt;-</span> <span class="va">Results_thresholds</span><span class="op">$</span><span class="va">preDist</span> </span>
 <span>  <span class="va">potJumps</span> <span class="op">&lt;-</span> <span class="va">Results_thresholds</span><span class="op">$</span><span class="va">potJumps</span> </span>
-<span>  <span class="va">end.time.find_thresholds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>  <span class="va">time.taken.find_thresholds</span> <span class="op">&lt;-</span> <span class="va">end.time.find_thresholds</span> <span class="op">-</span> <span class="va">start.time.find_thresholds</span></span>
 <span>  </span>
 <span>  </span>
 <span>  </span>
 <span>  <span class="co">#3 Find jumps</span></span>
-<span>  <span class="va">start.time.find_jumps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
 <span>  <span class="va">Results_jumps</span> <span class="op">&lt;-</span> <span class="fu">jumpID</span><span class="fu">::</span><span class="fu"><a href="../reference/find_jumps.html">find_jumps</a></span><span class="op">(</span>grid_data <span class="op">=</span> <span class="va">grid_data</span>, </span>
 <span>                                        potJumps <span class="op">=</span> <span class="va">potJumps</span>,</span>
 <span>                                        gap_size <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span>
 <span>  <span class="va">Jumps</span> <span class="op">&lt;-</span> <span class="va">Results_jumps</span><span class="op">$</span><span class="va">Jumps</span> </span>
 <span>  <span class="va">diffusers</span> <span class="op">&lt;-</span> <span class="va">Results_jumps</span><span class="op">$</span><span class="va">diffusers</span> </span>
 <span>  <span class="va">potDiffusion</span> <span class="op">&lt;-</span> <span class="va">Results_jumps</span><span class="op">$</span><span class="va">potDiffusion</span> </span>
-<span>  <span class="va">end.time.find_jumps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>  <span class="va">time.taken.find_jumps</span>  <span class="op">&lt;-</span> <span class="va">end.time.find_jumps</span> <span class="op">-</span> <span class="va">start.time.find_jumps</span> </span>
-<span>  </span>
+<span></span>
 <span>  </span>
 <span>  </span>
 <span>  <span class="co">#4 Find sec diff</span></span>
-<span>  <span class="va">start.time.find_secDiff</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
 <span>  <span class="va">Results_secDiff</span> <span class="op">&lt;-</span> <span class="fu">jumpID</span><span class="fu">::</span><span class="fu"><a href="../reference/find_secDiff.html">find_secDiff</a></span><span class="op">(</span>potDiffusion <span class="op">=</span> <span class="va">potDiffusion</span>,</span>
 <span>                                            Jumps <span class="op">=</span> <span class="va">Jumps</span>,</span>
 <span>                                            diffusers <span class="op">=</span> <span class="va">diffusers</span>,</span>
 <span>                                            Dist <span class="op">=</span> <span class="va">preDist</span>,</span>
 <span>                                            gap_size <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span>
-<span>  <span class="va">end.time.find_secDiff</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>  <span class="va">time.taken.find_secDiff</span>  <span class="op">&lt;-</span> <span class="va">end.time.find_secDiff</span> <span class="op">-</span> <span class="va">start.time.find_secDiff</span> </span>
+<span>  <span class="va">end.time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="va">time.taken</span>  <span class="op">&lt;-</span> <span class="va">end.time</span> <span class="op">-</span> <span class="va">start.time</span></span>
 <span>  </span>
 <span>  </span>
 <span>  </span>
 <span>  <span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>s <span class="op">=</span> <span class="va">s</span>, </span>
-<span>                       Time_sectors <span class="op">=</span> <span class="va">time.taken.attribute_sectors</span>,</span>
-<span>                       Time_thresholds <span class="op">=</span> <span class="va">time.taken.find_thresholds</span>,</span>
 <span>                       potJumps <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">potJumps</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, </span>
-<span>                       Time_jumps <span class="op">=</span> <span class="va">time.taken.find_jumps</span>,</span>
 <span>                       Jumps <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">Jumps</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, </span>
-<span>                       Time_secDiff <span class="op">=</span> <span class="va">time.taken.find_secDiff</span>,</span>
-<span>                       Total_time <span class="op">=</span> <span class="va">time.taken.attribute_sectors</span> <span class="op">+</span> <span class="va">time.taken.find_thresholds</span> <span class="op">+</span></span>
-<span>                         <span class="va">time.taken.find_jumps</span> <span class="op">+</span> <span class="va">time.taken.find_secDiff</span><span class="op">)</span></span>
+<span>                       Total_time <span class="op">=</span> <span class="va">time.taken</span><span class="op">)</span></span>
 <span>  <span class="va">optim</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">optim</span>, <span class="va">result</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] "Sectors: 16"</span></span>
-<span><span class="co">## 2024-08-14 19:30:27.679908 Start sector attribution... Sector attribution completed. </span></span>
-<span><span class="co">## 2024-08-14 19:30:27.724728 Start finding thresholds... Sector 1/16...  2/16...  3/16...  4/16...  5/16...  6/16...  7/16...  8/16...  9/16...  10/16...  11/16...  12/16...  13/16...  14/16...  15/16...  16/16</span></span>
+<span><span class="co">## 2024-08-21 00:50:23.433764 Start sector attribution... Sector attribution completed. </span></span>
+<span><span class="co">## 2024-08-21 00:50:23.476238 Start finding thresholds... Sector 1/16...  2/16...  3/16...  4/16...  5/16...  6/16...  7/16...  8/16...  9/16...  10/16...  11/16...  12/16...  13/16...  14/16...  15/16...  16/16</span></span>
 <span><span class="co">## Threshold analysis done. 4243 potential jumps were found. </span></span>
-<span><span class="co">## 2024-08-14 19:36:32.590748 Start finding jumps... Year 2014 ... Year 2015 ... Year 2016 ... Year 2017 ... Year 2018 ... Year 2019 ... Year 2020 ... Year 2021 ... Year 2022 ... Jump analysis done. 387 jumps were identified.</span></span>
-<span><span class="co">## 2024-08-14 19:36:54.569264 Start finding secondary diffusion... Year 2017 ...Year 2018 ...Year 2019 ...Year 2020 ...Year 2021 ...Year 2022 ...Analysis of secondary diffusion done. </span></span>
+<span><span class="co">## 2024-08-21 00:56:27.39965 Start finding jumps... Year 2014 ... Year 2015 ... Year 2016 ... Year 2017 ... Year 2018 ... Year 2019 ... Year 2020 ... Year 2021 ... Year 2022 ... Jump analysis done. 387 jumps were identified.</span></span>
+<span><span class="co">## 2024-08-21 00:56:49.052984 Start finding secondary diffusion... Year 2017 ...Year 2018 ...Year 2019 ...Year 2020 ...Year 2021 ...Year 2022 ...Analysis of secondary diffusion done. </span></span>
 <span><span class="co">## [1] "Sectors: 40"</span></span>
-<span><span class="co">## 2024-08-14 19:37:58.970896 Start sector attribution... Sector attribution completed. </span></span>
-<span><span class="co">## 2024-08-14 19:37:58.990979 Start finding thresholds... Sector 1/40...  2/40...  3/40...  4/40...  5/40...  6/40...  7/40...  8/40...  9/40...  10/40...  11/40...  12/40...  13/40...  14/40...  15/40...  16/40...  17/40...  18/40...  19/40...  20/40...  21/40...  22/40...  23/40...  24/40...  25/40...  26/40...  27/40...  28/40...  29/40...  30/40...  31/40...  32/40...  33/40...  34/40...  35/40...  36/40...  37/40...  38/40...  39/40...  40/40</span></span>
+<span><span class="co">## 2024-08-21 00:57:53.188523 Start sector attribution... Sector attribution completed. </span></span>
+<span><span class="co">## 2024-08-21 00:57:53.207578 Start finding thresholds... Sector 1/40...  2/40...  3/40...  4/40...  5/40...  6/40...  7/40...  8/40...  9/40...  10/40...  11/40...  12/40...  13/40...  14/40...  15/40...  16/40...  17/40...  18/40...  19/40...  20/40...  21/40...  22/40...  23/40...  24/40...  25/40...  26/40...  27/40...  28/40...  29/40...  30/40...  31/40...  32/40...  33/40...  34/40...  35/40...  36/40...  37/40...  38/40...  39/40...  40/40</span></span>
 <span><span class="co">## Threshold analysis done. 3747 potential jumps were found. </span></span>
-<span><span class="co">## 2024-08-14 19:39:48.714088 Start finding jumps... Year 2014 ... Year 2015 ... Year 2016 ... Year 2017 ... Year 2018 ... Year 2019 ... Year 2020 ... Year 2021 ... Year 2022 ... Jump analysis done. 387 jumps were identified.</span></span>
-<span><span class="co">## 2024-08-14 19:40:08.4436 Start finding secondary diffusion... Year 2016 ...Year 2017 ...Year 2018 ...Year 2019 ...Year 2020 ...Year 2021 ...Year 2022 ...Analysis of secondary diffusion done. </span></span>
+<span><span class="co">## 2024-08-21 00:59:42.489763 Start finding jumps... Year 2014 ... Year 2015 ... Year 2016 ... Year 2017 ... Year 2018 ... Year 2019 ... Year 2020 ... Year 2021 ... Year 2022 ... Jump analysis done. 387 jumps were identified.</span></span>
+<span><span class="co">## 2024-08-21 01:00:01.730229 Start finding secondary diffusion... Year 2016 ...Year 2017 ...Year 2018 ...Year 2019 ...Year 2020 ...Year 2021 ...Year 2022 ...Analysis of secondary diffusion done. </span></span>
 <span><span class="co">## [1] "Sectors: 80"</span></span>
-<span><span class="co">## 2024-08-14 19:40:53.632048 Start sector attribution... Sector attribution completed. </span></span>
-<span><span class="co">## 2024-08-14 19:40:53.652335 Start finding thresholds... Sector 1/80...  2/80...  3/80...  4/80...  5/80...  6/80...  7/80...  8/80...  9/80...  10/80...  11/80...  12/80...  13/80...  14/80...  15/80...  16/80...  17/80...  18/80...  19/80...  20/80...  21/80...  22/80...  23/80... Warning: no negative survey in the gap identified in sector 23 and year 2021 after 106 km. The spatial discontinuity that is identified may be due to few surveys done in this area, or space divided into too many sectors. Consider decreasing the number of sectors </span></span>
+<span><span class="co">## 2024-08-21 01:00:46.785491 Start sector attribution... Sector attribution completed. </span></span>
+<span><span class="co">## 2024-08-21 01:00:46.8046 Start finding thresholds... Sector 1/80...  2/80...  3/80...  4/80...  5/80...  6/80...  7/80...  8/80...  9/80...  10/80...  11/80...  12/80...  13/80...  14/80...  15/80...  16/80...  17/80...  18/80...  19/80...  20/80...  21/80...  22/80...  23/80... Warning: no negative survey in the gap identified in sector 23 and year 2021 after 106 km. The spatial discontinuity that is identified may be due to few surveys done in this area, or space divided into too many sectors. Consider decreasing the number of sectors </span></span>
 <span><span class="co">## Warning: no negative survey in the gap identified in sector 23 and year 2022 after 106 km. The spatial discontinuity that is identified may be due to few surveys done in this area, or space divided into too many sectors. Consider decreasing the number of sectors </span></span>
 <span><span class="co">##  24/80...  25/80...  26/80...  27/80...  28/80...  29/80...  30/80...  31/80...  32/80...  33/80... Warning: no negative survey in the gap identified in sector 33 and year 2019 after 113 km. The spatial discontinuity that is identified may be due to few surveys done in this area, or space divided into too many sectors. Consider decreasing the number of sectors </span></span>
 <span><span class="co">## Warning: no negative survey in the gap identified in sector 33 and year 2020 after 113 km. The spatial discontinuity that is identified may be due to few surveys done in this area, or space divided into too many sectors. Consider decreasing the number of sectors </span></span>
 <span><span class="co">##  34/80...  35/80...  36/80...  37/80...  38/80...  39/80...  40/80...  41/80...  42/80...  43/80...  44/80...  45/80...  46/80...  47/80...  48/80...  49/80...  50/80...  51/80...  52/80...  53/80...  54/80...  55/80...  56/80...  57/80...  58/80...  59/80...  60/80...  61/80...  62/80...  63/80...  64/80...  65/80...  66/80...  67/80...  68/80...  69/80...  70/80...  71/80...  72/80...  73/80...  74/80...  75/80...  76/80...  77/80...  78/80...  79/80...  80/80</span></span>
 <span><span class="co">## Threshold analysis done. 5034 potential jumps were found. </span></span>
-<span><span class="co">## 2024-08-14 19:41:13.743522 Start finding jumps... Year 2014 ... Year 2015 ... Year 2016 ... Year 2017 ... Year 2018 ... Year 2019 ... Year 2020 ... Year 2021 ... Year 2022 ... Jump analysis done. 387 jumps were identified.</span></span>
-<span><span class="co">## 2024-08-14 19:41:48.500857 Start finding secondary diffusion... Year 2016 ...Year 2017 ...Year 2018 ...Year 2019 ...Year 2020 ...Year 2021 ...Year 2022 ...Analysis of secondary diffusion done.</span></span></code></pre>
+<span><span class="co">## 2024-08-21 01:01:05.558771 Start finding jumps... Year 2014 ... Year 2015 ... Year 2016 ... Year 2017 ... Year 2018 ... Year 2019 ... Year 2020 ... Year 2021 ... Year 2022 ... Jump analysis done. 387 jumps were identified.</span></span>
+<span><span class="co">## 2024-08-21 01:01:39.525177 Start finding secondary diffusion... Year 2016 ...Year 2017 ...Year 2018 ...Year 2019 ...Year 2020 ...Year 2021 ...Year 2022 ...Analysis of secondary diffusion done.</span></span></code></pre>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">optim</span></span></code></pre></div>
-<pre><code><span><span class="co">##    s    Time_sectors Time_thresholds potJumps    Time_jumps Jumps</span></span>
-<span><span class="co">## 1 16 0.04386091 secs  6.0811074 mins     4243 21.97833 secs   387</span></span>
-<span><span class="co">## 2 40 0.02001286 secs  1.8287168 mins     3747 19.72941 secs   387</span></span>
-<span><span class="co">## 3 80 0.02021694 secs  0.3348515 mins     5034 34.75724 secs   387</span></span>
-<span><span class="co">##     Time_secDiff    Total_time</span></span>
-<span><span class="co">## 1 1.0733479 mins 451.2895 secs</span></span>
-<span><span class="co">## 2 0.7531133 mins 174.6592 secs</span></span>
-<span><span class="co">## 3 1.2460512 mins 129.6316 secs</span></span></code></pre>
+<pre><code><span><span class="co">##    s potJumps Jumps    Total_time</span></span>
+<span><span class="co">## 1 16     4243   387 7.495905 mins</span></span>
+<span><span class="co">## 2 40     3747   387 2.893267 mins</span></span>
+<span><span class="co">## 3 80     5034   387 2.117221 mins</span></span></code></pre>
 <p>For this dataset, all computational times are decreased by dividing
 space into 40 sectors instead of 16. Data is not dense enough for
 dividing space into 80 sectors, as indicated by multiple warning

@@ -86,7 +86,7 @@ spread</h1>
 Belouard<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>
 </h4>
             
-            <h4 data-toc-skip class="date">2024-08-14</h4>
+            <h4 data-toc-skip class="date">2024-08-21</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/nbelouard/jumpID/blob/HEAD/vignettes/010_Jump_list.Rmd" class="external-link"><code>vignettes/010_Jump_list.Rmd</code></a></small>
       <div class="hidden name"><code>010_Jump_list.Rmd</code></div>
@@ -136,7 +136,7 @@ this vignette is written, <code>lydemapr</code> contains data up to year
 lanternfly, and take a look at it.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">slf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org//reference/here.html" class="external-link">here</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"data"</span>, <span class="st">"lyde_data_v2"</span>, <span class="st">"lyde.csv"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">slf</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/compound.html" class="external-link">%&lt;&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">bio_year</span>, <span class="va">latitude</span>, <span class="va">longitude</span>, <span class="va">lyde_established</span><span class="op">)</span></span>
+<span><span class="va">slf</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/compound.html" class="external-link">%&lt;&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">bio_year</span>, <span class="va">latitude</span>, <span class="va">longitude</span>, <span class="va">lyde_established</span><span class="op">)</span> </span>
 <span><span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span><span class="va">slf</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 831,039 × 4</span></span></span>
 <span><span class="co">##    bio_year latitude longitude lyde_established</span></span>
@@ -169,10 +169,12 @@ this survey (at least two live individuals or an egg mass, see
 <h2 id="data-formatting">2. Data formatting<a class="anchor" aria-label="anchor" href="#data-formatting"></a>
 </h2>
 <p>First, to use the <code>jumpID</code> package, we need to rename the
-columns with generic names expected by the package.</p>
+columns with generic names expected by the package. We also remove rows
+where the SLF establishment is NA.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">slf</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/compound.html" class="external-link">%&lt;&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span>year <span class="op">=</span> <span class="va">bio_year</span>,</span>
-<span>                established <span class="op">=</span> <span class="va">lyde_established</span><span class="op">)</span></span></code></pre></div>
+<span>                established <span class="op">=</span> <span class="va">lyde_established</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">established</span><span class="op">)</span> <span class="op">==</span> <span class="cn">F</span><span class="op">)</span></span></code></pre></div>
 <p>Second, multiple surveys were sometimes conducted at the same
 location during the same year, resulting in a redundant dataset for the
 purpose of our analysis. We summarize the information available at each
@@ -193,7 +195,7 @@ only if one of the surveys considered it as established.</p>
 <span><span class="co">## the `.groups` argument.</span></span></code></pre>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span><span class="va">grid_data</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 130,015 × 4</span></span></span>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 123,542 × 4</span></span></span>
 <span><span class="co">##     year latitude longitude established</span></span>
 <span><span class="co">##    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>      </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 1</span>  <span style="text-decoration: underline;">2</span>014     39.8     -<span style="color: #BB0000;">76.8</span> FALSE      </span></span>
@@ -206,8 +208,8 @@ only if one of the surveys considered it as established.</p>
 <span><span class="co">## <span style="color: #BCBCBC;"> 8</span>  <span style="text-decoration: underline;">2</span>014     39.9     -<span style="color: #BB0000;">76.8</span> FALSE      </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 9</span>  <span style="text-decoration: underline;">2</span>014     39.9     -<span style="color: #BB0000;">76.2</span> FALSE      </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">10</span>  <span style="text-decoration: underline;">2</span>014     39.9     -<span style="color: #BB0000;">76.8</span> FALSE      </span></span>
-<span><span class="co">## <span style="color: #949494;"># ℹ 130,005 more rows</span></span></span></code></pre>
-<p>The dataset now has 130,015 rows, corresponding to 1280 x 1596 cells.
+<span><span class="co">## <span style="color: #949494;"># ℹ 123,532 more rows</span></span></span></code></pre>
+<p>The dataset now has 123,532 rows, corresponding to 1280 x 1596 cells.
 Let’s look at these data on a map.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get a simple feature object for states</span></span>
@@ -270,17 +272,17 @@ distance between each survey cell and the introduction point.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">grid_data</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##       year         latitude       longitude       established    </span></span>
 <span><span class="co">##  Min.   :2014   Min.   :29.48   Min.   :-123.27   Mode :logical  </span></span>
-<span><span class="co">##  1st Qu.:2019   1st Qu.:39.89   1st Qu.: -77.07   FALSE:72980    </span></span>
-<span><span class="co">##  Median :2020   Median :40.33   Median : -75.81   TRUE :48601    </span></span>
-<span><span class="co">##  Mean   :2020   Mean   :40.20   Mean   : -76.43   NA's :8434     </span></span>
-<span><span class="co">##  3rd Qu.:2021   3rd Qu.:40.84   3rd Qu.: -74.98                  </span></span>
+<span><span class="co">##  1st Qu.:2019   1st Qu.:39.87   1st Qu.: -77.18   FALSE:74941    </span></span>
+<span><span class="co">##  Median :2020   Median :40.34   Median : -75.85   TRUE :48601    </span></span>
+<span><span class="co">##  Mean   :2020   Mean   :40.20   Mean   : -76.47                  </span></span>
+<span><span class="co">##  3rd Qu.:2021   3rd Qu.:40.86   3rd Qu.: -74.93                  </span></span>
 <span><span class="co">##  Max.   :2022   Max.   :45.71   Max.   : -68.00                  </span></span>
 <span><span class="co">##   DistToIntro      </span></span>
 <span><span class="co">##  Min.   :   0.414  </span></span>
-<span><span class="co">##  1st Qu.:  71.635  </span></span>
-<span><span class="co">##  Median : 111.422  </span></span>
-<span><span class="co">##  Mean   : 177.846  </span></span>
-<span><span class="co">##  3rd Qu.: 192.218  </span></span>
+<span><span class="co">##  1st Qu.:  76.988  </span></span>
+<span><span class="co">##  Median : 115.577  </span></span>
+<span><span class="co">##  Mean   : 184.277  </span></span>
+<span><span class="co">##  3rd Qu.: 203.000  </span></span>
 <span><span class="co">##  Max.   :3883.978</span></span></code></pre>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># save this dataset</span></span>
@@ -316,7 +318,7 @@ faster.</p>
 <span>                             centroid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">75.675340</span>, <span class="fl">40.415240</span><span class="op">)</span></span>
 <span>                             <span class="co"># vector containing the centroid coordinates as long/lat</span></span>
 <span>                             <span class="op">)</span> </span></code></pre></div>
-<pre><code><span><span class="co">## 2024-08-14 19:04:50.121263 Start sector attribution... Sector attribution completed.</span></span></code></pre>
+<pre><code><span><span class="co">## 2024-08-21 00:31:33.430603 Start sector attribution... Sector attribution completed.</span></span></code></pre>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Map results</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">states</span><span class="op">)</span> <span class="op">+</span></span>
@@ -355,10 +357,12 @@ check that there are negative surveys in the discontinuity, so that the
 absence of SLF established is not due to an absence of surveys in the
 area.</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">Results_thresholds</span> <span class="op">&lt;-</span> <span class="fu">jumpID</span><span class="fu">::</span><span class="fu"><a href="../reference/find_thresholds.html">find_thresholds</a></span><span class="op">(</span>dataset <span class="op">=</span> <span class="va">grid_data_sectors</span>, </span>
-<span>                                                gap_size <span class="op">=</span> <span class="fl">15</span>, </span>
+<code class="sourceCode R"><span><span class="va">gap_size</span> <span class="op">=</span> <span class="fl">15</span> </span>
+<span></span>
+<span><span class="va">Results_thresholds</span> <span class="op">&lt;-</span> <span class="fu">jumpID</span><span class="fu">::</span><span class="fu"><a href="../reference/find_thresholds.html">find_thresholds</a></span><span class="op">(</span>dataset <span class="op">=</span> <span class="va">grid_data_sectors</span>, </span>
+<span>                                                gap_size <span class="op">=</span> <span class="va">gap_size</span>, </span>
 <span>                                                negatives <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## 2024-08-14 19:05:05.853497 Start finding thresholds... Sector 1/16...  2/16...  3/16...  4/16...  5/16...  6/16...  7/16...  8/16...  9/16...  10/16...  11/16...  12/16...  13/16...  14/16...  15/16...  16/16</span></span>
+<pre><code><span><span class="co">## 2024-08-21 00:31:46.399838 Start finding thresholds... Sector 1/16...  2/16...  3/16...  4/16...  5/16...  6/16...  7/16...  8/16...  9/16...  10/16...  11/16...  12/16...  13/16...  14/16...  15/16...  16/16</span></span>
 <span><span class="co">## Threshold analysis done. 4243 potential jumps were found.</span></span></code></pre>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Resulting objects are</span></span>
@@ -402,8 +406,8 @@ final list of jumps is obtained in the object <code>Jumps</code>.</gap></p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">Results_jumps</span> <span class="op">&lt;-</span> <span class="fu">jumpID</span><span class="fu">::</span><span class="fu"><a href="../reference/find_jumps.html">find_jumps</a></span><span class="op">(</span>grid_data <span class="op">=</span> <span class="va">grid_data</span>, </span>
 <span>                       potJumps <span class="op">=</span> <span class="va">Results_thresholds</span><span class="op">$</span><span class="va">potJumps</span>,</span>
-<span>                       gap_size <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## 2024-08-14 19:11:11.257618 Start finding jumps... Year 2014 ... Year 2015 ... Year 2016 ... Year 2017 ... Year 2018 ... Year 2019 ... Year 2020 ... Year 2021 ... Year 2022 ... Jump analysis done. 387 jumps were identified.</span></span></code></pre>
+<span>                       gap_size <span class="op">=</span> <span class="va">gap_size</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## 2024-08-21 00:37:48.337307 Start finding jumps... Year 2014 ... Year 2015 ... Year 2016 ... Year 2017 ... Year 2018 ... Year 2019 ... Year 2020 ... Year 2021 ... Year 2022 ... Jump analysis done. 387 jumps were identified.</span></span></code></pre>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Resulting objects are:</span></span>
 <span><span class="co">#- Results_jumps$Jumps, a data frame containing all jumps</span></span>
@@ -449,17 +453,22 @@ point.</p>
 <span>                                Jumps <span class="op">=</span> <span class="va">Results_jumps</span><span class="op">$</span><span class="va">Jumps</span>,</span>
 <span>                                diffusers <span class="op">=</span> <span class="va">Results_jumps</span><span class="op">$</span><span class="va">diffusers</span>,</span>
 <span>                                Dist <span class="op">=</span> <span class="va">Results_thresholds</span><span class="op">$</span><span class="va">preDist</span>,</span>
-<span>                                gap_size <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## 2024-08-14 19:11:56.374925 Start finding secondary diffusion... Year 2017 ...Year 2018 ...Year 2019 ...Year 2020 ...Year 2021 ...Year 2022 ...Analysis of secondary diffusion done.</span></span></code></pre>
+<span>                                gap_size <span class="op">=</span> <span class="va">gap_size</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## 2024-08-21 00:38:32.948486 Start finding secondary diffusion... Year 2017 ...Year 2018 ...Year 2019 ...Year 2020 ...Year 2021 ...Year 2022 ...Analysis of secondary diffusion done.</span></span></code></pre>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Resulting objects are:</span></span>
 <span><span class="co">#- Results_secDiff$secDiff, a data frame of all cells that are secondary diffusion </span></span>
 <span><span class="co"># from a previous jump</span></span>
 <span><span class="co">#- Results_secDiff$Dist, a data frame of all extreme points on the invasion front (thresholds)</span></span>
 <span></span>
+<span><span class="co"># We extract all diffusion points from the original dataset (points that are neither jumps or secondary diffusion)</span></span>
+<span><span class="va">diffusion</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="va">grid_data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">established</span> <span class="op">==</span> <span class="cn">T</span><span class="op">)</span>,</span>
+<span>                     <span class="va">Results_jumps</span><span class="op">$</span><span class="va">Jumps</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">DistToSLF</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="va">Results_secDiff</span><span class="op">$</span><span class="va">secDiff</span><span class="op">)</span></span>
+<span></span>
 <span><span class="co"># Make a single object for the map</span></span>
-<span><span class="va">secDiff_map</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">Results_secDiff</span><span class="op">$</span><span class="va">Dist</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
-<span>                                  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Type <span class="op">=</span> <span class="st">"Diffusion threshold"</span><span class="op">)</span>,</span>
+<span><span class="va">secDiff_map</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">diffusion</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>                                  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Type <span class="op">=</span> <span class="st">"Diffusion"</span><span class="op">)</span>,</span>
 <span>                                <span class="va">Results_jumps</span><span class="op">$</span><span class="va">Jumps</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>                                  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Type <span class="op">=</span> <span class="st">"Jump"</span><span class="op">)</span>,</span>
 <span>                                <span class="va">Results_secDiff</span><span class="op">$</span><span class="va">secDiff</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
@@ -491,15 +500,17 @@ function.</p>
 <span>                                              centroid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">75.675340</span>, <span class="fl">40.415240</span><span class="op">)</span>,</span>
 <span>                                              gap_size <span class="op">=</span> <span class="fl">15</span>,</span>
 <span>                                              negatives <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## 2024-08-14 19:13:13.971088 Start sector attribution... Sector attribution completed. </span></span>
-<span><span class="co">## 2024-08-14 19:13:14.00776 Start finding thresholds... Sector 1/16...  2/16...  3/16...  4/16...  5/16...  6/16...  7/16...  8/16...  9/16...  10/16...  11/16...  12/16...  13/16...  14/16...  15/16...  16/16</span></span>
+<pre><code><span><span class="co">## 2024-08-21 00:39:54.467691 Start sector attribution... Sector attribution completed. </span></span>
+<span><span class="co">## 2024-08-21 00:39:54.487126 Start finding thresholds... Sector 1/16...  2/16...  3/16...  4/16...  5/16...  6/16...  7/16...  8/16...  9/16...  10/16...  11/16...  12/16...  13/16...  14/16...  15/16...  16/16</span></span>
 <span><span class="co">## Threshold analysis done. 4243 potential jumps were found. </span></span>
-<span><span class="co">## 2024-08-14 19:19:42.800389 Start finding jumps... Year 2014 ... Year 2015 ... Year 2016 ... Year 2017 ... Year 2018 ... Year 2019 ... Year 2020 ... Year 2021 ... Year 2022 ... Jump analysis done. 387 jumps were identified.</span></span>
-<span><span class="co">## 2024-08-14 19:26:21.805724 Start finding secondary diffusion... Year 2017 ...Year 2018 ...Year 2019 ...Year 2020 ...Year 2021 ...Year 2022 ...Analysis of secondary diffusion done.</span></span></code></pre>
+<span><span class="co">## 2024-08-21 00:45:46.977659 Start finding jumps... Year 2014 ... Year 2015 ... Year 2016 ... Year 2017 ... Year 2018 ... Year 2019 ... Year 2020 ... Year 2021 ... Year 2022 ... Jump analysis done. 387 jumps were identified.</span></span>
+<span><span class="co">## 2024-08-21 00:46:12.780672 Start finding secondary diffusion... Year 2017 ...Year 2018 ...Year 2019 ...Year 2020 ...Year 2021 ...Year 2022 ...Analysis of secondary diffusion done.</span></span></code></pre>
 <div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># save resulting objects </span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html" class="external-link">write.csv</a></span><span class="op">(</span><span class="va">jumps_wrapper</span><span class="op">$</span><span class="va">Dist</span>, </span>
 <span>          <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org//reference/here.html" class="external-link">here</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"exported-data"</span>, <span class="st">"thresholds.csv"</span><span class="op">)</span>, row.names <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html" class="external-link">write.csv</a></span><span class="op">(</span><span class="va">jumps_wrapper</span><span class="op">$</span><span class="va">diffusion</span>, </span>
+<span>          <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org//reference/here.html" class="external-link">here</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"exported-data"</span>, <span class="st">"diffusion.csv"</span><span class="op">)</span>, row.names <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html" class="external-link">write.csv</a></span><span class="op">(</span><span class="va">jumps_wrapper</span><span class="op">$</span><span class="va">Jumps</span>, </span>
 <span>          <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org//reference/here.html" class="external-link">here</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"exported-data"</span>, <span class="st">"jumps.csv"</span><span class="op">)</span>, row.names <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html" class="external-link">write.csv</a></span><span class="op">(</span><span class="va">jumps_wrapper</span><span class="op">$</span><span class="va">secDiff</span>, </span>
@@ -507,8 +518,8 @@ function.</p>
 <p>We plot the results on a map.</p>
 <div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Make a single object for the map</span></span>
-<span><span class="va">jumps_wrapper_map</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">jumps_wrapper</span><span class="op">$</span><span class="va">Dist</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
-<span>                                        <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Type <span class="op">=</span> <span class="st">"Diffusion threshold"</span><span class="op">)</span>,</span>
+<span><span class="va">jumps_wrapper_map</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">jumps_wrapper</span><span class="op">$</span><span class="va">diffusion</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>                                        <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Type <span class="op">=</span> <span class="st">"Diffusion"</span><span class="op">)</span>,</span>
 <span>                                      <span class="va">jumps_wrapper</span><span class="op">$</span><span class="va">Jumps</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>                                        <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Type <span class="op">=</span> <span class="st">"Jump"</span><span class="op">)</span>,</span>
 <span>                                      <span class="va">jumps_wrapper</span><span class="op">$</span><span class="va">secDiff</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>

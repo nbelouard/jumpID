@@ -3,17 +3,12 @@ title: "#1: Isolating dispersal jumps and diffusive spread"
 author: 
 - Nadege Belouard^[iEco lab at Temple University, Ecobio lab at the University of Rennes, nadege.belouard@gmail.com]
 date: "`r Sys.Date()`"
-output:
-  pdf_document:
-    toc: TRUE
-    toc_depth: 3
+output: 
   html_document:
+    theme: cosmo
     toc: TRUE
+    toc_float: TRUE
     toc_depth: 3
-  rmarkdown::html_document:
-    toc: true
-    toc_depth: 3   
-    toc_float: true  
 params:
   display: FALSE
   run: TRUE

@@ -4,16 +4,11 @@ author:
 - Nadege Belouard^[iEco lab at Temple University, Ecobio lab at the University of Rennes, nadege.belouard@gmail.com]
 date: "`r Sys.Date()`"
 output:
-  pdf_document:
-    toc: TRUE
-    toc_depth: 3
   html_document:
+    theme: cosmo
     toc: TRUE
+    toc_float: TRUE
     toc_depth: 3
-  rmarkdown::html_document:
-    toc: true
-    toc_depth: 3   
-    toc_float: true 
 params:
   display: FALSE
   run: TRUE
@@ -59,61 +54,47 @@ for (s in sectors){
   print(paste0("Sectors: ", s))
   
   #1 Attribute sectors
-  start.time.attribute_sectors <- Sys.time()
+  start.time <- Sys.time()
   grid_data_sectors <- jumpID::attribute_sectors(dataset = grid_data, 
                                                    nb_sectors = s, 
                                                    centroid = c(-75.675340, 40.415240))
-  end.time.attribute_sectors <- Sys.time()
-  time.taken.attribute_sectors <- end.time.attribute_sectors - start.time.attribute_sectors
   
   
   
   #2 Find thresholds
-  start.time.find_thresholds <- Sys.time()
   Results_thresholds <- jumpID::find_thresholds(dataset = grid_data_sectors, 
                                                   gap_size = 15, 
                                                   negatives = T)
   preDist <- Results_thresholds$preDist 
   potJumps <- Results_thresholds$potJumps 
-  end.time.find_thresholds <- Sys.time()
-  time.taken.find_thresholds <- end.time.find_thresholds - start.time.find_thresholds
   
   
   
   #3 Find jumps
-  start.time.find_jumps <- Sys.time()
   Results_jumps <- jumpID::find_jumps(grid_data = grid_data, 
                                         potJumps = potJumps,
                                         gap_size = 15)
   Jumps <- Results_jumps$Jumps 
   diffusers <- Results_jumps$diffusers 
   potDiffusion <- Results_jumps$potDiffusion 
-  end.time.find_jumps <- Sys.time()
-  time.taken.find_jumps  <- end.time.find_jumps - start.time.find_jumps 
-  
+
   
   
   #4 Find sec diff
-  start.time.find_secDiff <- Sys.time()
   Results_secDiff <- jumpID::find_secDiff(potDiffusion = potDiffusion,
                                             Jumps = Jumps,
                                             diffusers = diffusers,
                                             Dist = preDist,
                                             gap_size = 15)
-  end.time.find_secDiff <- Sys.time()
-  time.taken.find_secDiff  <- end.time.find_secDiff - start.time.find_secDiff 
+  end.time <- Sys.time()
+  time.taken  <- end.time - start.time
   
   
   
   result <- data.frame(s = s, 
-                       Time_sectors = time.taken.attribute_sectors,
-                       Time_thresholds = time.taken.find_thresholds,
                        potJumps = dim(potJumps)[1], 
-                       Time_jumps = time.taken.find_jumps,
                        Jumps = dim(Jumps)[1], 
-                       Time_secDiff = time.taken.find_secDiff,
-                       Total_time = time.taken.attribute_sectors + time.taken.find_thresholds +
-                         time.taken.find_jumps + time.taken.find_secDiff)
+                       Total_time = time.taken)
   optim <- rbind(optim, result)
 }
 
