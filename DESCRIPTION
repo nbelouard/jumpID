@@ -5,7 +5,7 @@ Authors@R:
     person("Nadège", "Belouard", , "nadege.belouard@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-7968-7735"))
 Maintainer: Nadège Belouard <nadege.belouard@gmail.com>
-URL: https://nbelouard.github.io/slfjumps/
+URL: https://nbelouard.github.io/jumpID/
 Description: jumpID finds dispersal jumps and secondary diffusion from occurrence data.
 BugReports: https://github.com/nbelouard/jumpID/issues
 License: use_mit_license()

@@ -1,0 +1,9 @@
+url: https://nbelouard.github.io/jumpID/
+template:
+  bootstrap: 5
+  bootswatch: spacelab
+  light-switch: true
+output:
+  html_document:
+    toc: TRUE
+    toc_float: TRUE

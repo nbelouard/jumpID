@@ -6,7 +6,6 @@ author:
 date: "`r Sys.Date()`"
 output:
   html_document:
-    theme: cosmo
     toc: TRUE
     toc_float: TRUE
     toc_depth: 3
@@ -89,6 +88,8 @@ map_rarefied <- ggplot(data = states) +
   labs(x = "Longitude", y = "Latitude") +
   theme(panel.background = element_rect(fill = "white"))
 
+#| fig.alt: >
+#|   Map with dispersal jumps colored by year, and rarefied jumps
 map_rarefied
 ```
 
@@ -130,6 +131,8 @@ jumps_plot <- ggplot() +
   scale_x_continuous(breaks = seq(2017, 2022, by = 1)) +
   theme(text = element_text(size = 10))
 
+#| fig.alt: >
+#|   Barplot with the number of jump clusters and jumps, colored by year
 jumps_plot
 ```
 
@@ -165,6 +168,8 @@ MeanDist_jump <- ggplot() +
     y = "Distance from core invasion (km)") +
   theme_classic() 
 
+#| fig.alt: >
+#|   Boxplot with the distance of jump clusters from the invasion front colored by year
 MeanDist_jump
 ```
 
@@ -178,6 +183,8 @@ Distrib_jumpDist <- ggplot(Jump_clusters, aes(x = DistToFront)) +
   labs(x = "Distance from core invasion (km)",
        y = "Count of jump locations")
 
+#| fig.alt: >
+#|   Histogram of the jump distances colored by year
 Distrib_jumpDist
 ```
 
@@ -202,6 +209,8 @@ fig2 <- ggdraw() +
   draw_plot_label(c("(a)", "(b)", "(c)", "(d)"), c(0, 0, 0.33, 0.66), c(1, 0.36, 0.36, 0.36), size = 15) +
   theme(plot.background = element_rect(fill="#FFFFFF", color = NA))
 
+#| fig.alt: >
+#|   Figure assembling the previous figures A, B, C, D.
 fig2
 
 ggsave(file.path(here::here(), "figures", "2. jump_description.jpg"), 
@@ -246,6 +255,8 @@ secDiff_map <- ggplot() +
   guides(colour = guide_legend(paste0("Secondary", "\n", "Diffusion")), 
          fill = guide_legend("Rarefied jumps"))
 
+#| fig.alt: >
+#|   Map showing the location of secondary diffusion around dispersal jumps, colored by year
 secDiff_map
 ```
 
@@ -314,6 +325,8 @@ Jumps_secDiff_plot <- ggplot() +
         axis.title = element_text(size = 18),
         axis.text = element_text(size = 12))
 
+#| fig.alt: >
+#|   Barplot with the number of jumps followed by secondary diffusion or enveloped, colored by year
 Jumps_secDiff_plot
 ```
 
@@ -324,6 +337,8 @@ secDiff_graphs_combined <- cowplot::ggdraw() +
   cowplot::draw_plot(Jumps_secDiff_plot, 0, 0, 1, 0.33) +
   cowplot::draw_plot_label(c("(a)", "(b)"), c(0.06, 0.06), c(0.90, 0.33), size = 25) 
 
+#| fig.alt: >
+#|   Figure combining previous figures A and B
 secDiff_graphs_combined
 
 ggsave(file.path(here::here(), "figures", "3. secDiff_combined.jpeg"),
@@ -408,6 +423,8 @@ invasionRadius <- ggplot(data = radiusData,
       axis.title = element_text(size = 18),
       axis.text = element_text(size = 12))
 
+#| fig.alt: >
+#|   Boxplot showing the yearly invasion radius when considering diffusion only or all spread
 invasionRadius
 
 ggsave(file.path(here::here(), "figures", "4. invasionRadius.jpeg"), 
@@ -466,6 +483,8 @@ mapUS <- ggplot(data = states) +
   theme_classic() +
   theme(legend.position = "bottom", legend.key = element_rect(fill = "white", colour = NA)) 
 
+#| fig.alt: >
+#|   Map showing all SLF surveys done in the US
 mapUS
 
 # save it
@@ -491,6 +510,8 @@ zoomedMap <- ggplot(data = states) +
   theme_classic() +
   theme(legend.position="bottom", legend.key = element_rect(fill = "white", colour = NA)) 
 
+#| fig.alt: >
+#|   Map zoomed-in on the eastern US to show positive and negative SLF surveys
 zoomedMap
 
 # save it
@@ -530,6 +551,8 @@ facetedResults <- ggplot(data = states) +
       axis.title = element_text(size = 18),
       axis.text = element_text(size = 12))
 
+#| fig.alt: >
+#|   Output of the jumpID workflow: maps of diffusion, jumps and secondary diffusion identified per year, faceted per year
 facetedResults
 
 ggsave(file.path(here::here(), "figures", "S2. faceted_results.jpeg"), 
@@ -580,6 +603,8 @@ effort_plot <- ggplot() +
   xlab("Year") + ylab("Number of surveys") +
   guides(shape = guide_legend("Survey type"))
   
+#| fig.alt: >
+#|   Plot showing the evolution of the number of SLF surveys per year
 effort_plot
 
 ggsave(file.path(here::here(), "figures", "S3. number of surveys.jpg"), 

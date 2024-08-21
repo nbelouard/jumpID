@@ -5,7 +5,6 @@ author:
 date: "`r Sys.Date()`"
 output: 
   html_document:
-    theme: cosmo
     toc: TRUE
     toc_float: TRUE
     toc_depth: 3
@@ -85,6 +84,8 @@ states <- sf::st_as_sf(maps::map("state", plot = FALSE, fill = TRUE)) %>%
   sf::st_transform(crs = 4326)
 
 # Map all surveys
+#| fig.alt: >
+#|   A map of the US states showing the location of SLF surveys
 ggplot(data = states) +
   geom_point(data = grid_data, aes(x = longitude, y = latitude)) +
   xlab("Longitude") + ylab("Latitude") +
@@ -99,6 +100,8 @@ Cells were predominantly surveyed in the Eastern US, but there are also cells su
 Every year, there is a large number of cells surveyed with positive (SLF established) or negative results (SLF not established). A zoomed-in map allows to see the cell grid.
 ```{r show grid map, fig.height = 5, fig.width = 5}
 
+#| fig.alt: >
+#|   A zoomed-in map showing that survey points are aligned on a grid
 ggplot(data = states) +
   geom_point(data = grid_data, aes(x = longitude, y = latitude, 
                                    col = established), size = 1) +
@@ -174,6 +177,8 @@ grid_data_sectors <- jumpID::attribute_sectors(dataset = grid_data,
                              
 
 # Map results
+#| fig.alt: >
+#|   A map showing all survey points colored by sector
 ggplot(data = states) +
   geom_point(data = grid_data_sectors, 
              aes(x = longitude, y = latitude, 
@@ -215,6 +220,8 @@ thresholds_map <- dplyr::bind_rows(Results_thresholds$preDist %>%
                                      dplyr::mutate(Type = "Potential jump"))
 
 # Map results
+#| fig.alt: >
+#|   A map showing diffusion thresholds in blue and potential dispersal jumps in green
 ggplot(data = states) +
   geom_point(data = grid_data %>% filter(established == T), 
              aes(x = longitude, y = latitude), col = "gray") +
@@ -255,6 +262,8 @@ jumps_map <- dplyr::bind_rows(Results_jumps$diffusers %>%
                                 mutate(Type = "Potential diffusion"))
 
 # Map results
+#| fig.alt: >
+#|   A map showing dispersal jumps in green, diffusion points in blue, and potential diffusion points in orange
 ggplot(data = states) +
   geom_point(data = grid_data, 
              aes(x = longitude, y = latitude), col = "gray") +
@@ -301,6 +310,8 @@ secDiff_map <- dplyr::bind_rows(diffusion %>%
                                   mutate(Type = "Secondary diffusion"))
 
 # Map results
+#| fig.alt: >
+#|   A final map showing diffusion points in blue, jumps in green, and secondary diffusion in orange
 ggplot(data = states) +
   geom_point(data = grid_data %>% filter(established == T), 
              aes(x = longitude, y = latitude), col = "gray") +
@@ -353,6 +364,8 @@ jumps_wrapper_map <- dplyr::bind_rows(jumps_wrapper$diffusion %>%
                                         dplyr::mutate(Type = "Secondary diffusion"))
 
 # Map results
+#| fig.alt: >
+#|   A map showing diffusion points in blue, jumps in green, and secondary diffusion in orange
 ggplot(data = states) +
   geom_point(data = grid_data %>% filter(established == F), 
              aes(x = longitude, y = latitude), col = "gray90") +
@@ -394,6 +407,8 @@ Groups <- Jump_groups %>%
   dplyr::arrange(-Nb) %>% 
   dplyr::filter(Nb > 1)
 
+#| fig.alt: >
+#|   A barplot showing the number of jump clusters identified per year
 ggplot(Groups, aes(x = as.factor(year), y = Nb)) +
   geom_boxplot() + theme_classic() +
   ylab("Number of jumps per cluster") + xlab("Year")
@@ -414,6 +429,8 @@ write.csv(Jump_clusters,
 
 
 # Map these groups and the rarefied points
+#| fig.alt: >
+#|   A map showing all jumps colored by year and the rarefied jumps
 ggplot(data = states) +
   geom_sf(data = states, fill = "white") +
   coord_sf(xlim = c(-82, -72), ylim = c(38, 43), expand = FALSE) +
