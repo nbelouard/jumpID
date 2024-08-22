@@ -1,19 +1,22 @@
 ---
-title: "#2: Decreasing calculation time"
-author: 
-- Nadege Belouard^[iEco lab at Temple University, Ecobio lab at the University of Rennes, nadege.belouard@gmail.com]
+title: '#2: Decreasing calculation time'
+author: Nadege Belouard^[iEco lab at Temple University, Ecobio lab at the University
+  of Rennes, nadege.belouard@gmail.com]
 date: "`r Sys.Date()`"
 output:
+  pdf_document:
+    toc: true
+    toc_depth: '3'
   html_document:
-    toc: TRUE
-    toc_float: TRUE
+    toc: true
+    toc_float: true
     toc_depth: 3
 params:
-  display: FALSE
-  run: TRUE
-  loadfiles: FALSE
-  savefiles: TRUE
-editor_options: 
+  display: false
+  run: true
+  loadfiles: false
+  savefiles: true
+editor_options:
   chunk_output_type: console
 ---
 
@@ -23,7 +26,7 @@ In case of extremely large species occurrence datasets, it may take a long time 
   
 We demonstrate the effect of the number of sectors on computational time on the SLF dataset.  
 
-```{r load packages, messages = F, warning = F}
+```{r load packages, messages = F, warning = F, include = F}
 library(magrittr)  
 library(dplyr)
 library(jumpID)
@@ -38,7 +41,7 @@ grid_data <- read.csv(file.path(here::here(), "exported-data", "grid_data.csv"))
 
 # Compare calculation times 
 Run the jumpID functions successively for 16, 40, and 80 sectors and compare computation times.  
-```{r run optimization}
+```{r run optimization, echo = F}
 sectors = c(16,40,80)
 
 optim <- data.frame(s = NULL, 

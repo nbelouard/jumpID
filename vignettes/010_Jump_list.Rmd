@@ -1,19 +1,22 @@
 ---
-title: "#1: Isolating dispersal jumps and diffusive spread"
-author: 
-- Nadege Belouard^[iEco lab at Temple University, Ecobio lab at the University of Rennes, nadege.belouard@gmail.com]
+title: '#1: Isolating dispersal jumps and diffusive spread'
+author: Nadege Belouard^[iEco lab at Temple University, Ecobio lab at the University
+  of Rennes, nadege.belouard@gmail.com]
 date: "`r Sys.Date()`"
-output: 
+output:
+  pdf_document:
+    toc: true
+    toc_depth: '3'
   html_document:
-    toc: TRUE
-    toc_float: TRUE
+    toc: true
+    toc_float: true
     toc_depth: 3
 params:
-  display: FALSE
-  run: TRUE
-  loadfiles: FALSE
-  savefiles: TRUE
-editor_options: 
+  display: false
+  run: true
+  loadfiles: false
+  savefiles: true
+editor_options:
   chunk_output_type: console
 ---
 
@@ -21,8 +24,7 @@ editor_options:
 
 The spread of invasive species is due both to diffusive spread and human-assisted jump dispersal, often caused by species hitchhiking on vehicles. The aim of this vignette is to differentiate diffusive spread from jump dispersal in invasive species based on occurrence data. This identification required the development of a directional analysis of species presence. We demonstrate this method using occurrence data of the spotted lanternfly, *Lycorma delicatula*, an invasive Hemiptera in the United States. 
 
-We load the necessary packages.
-```{r load packages}
+```{r load packages, include = FALSE}
 
 library(magrittr)
 library(ggplot2)
@@ -36,11 +38,11 @@ library(jumpID)
 The SLF dataset is available from the [`lydemapr` companion package](https://github.com/ieco-lab/lydemapr). In the `download_data` folder, then in the `v2_2023` subfolder, download the `lyde_data_v2.zip` file and place it in the `data` folder of your local `jumpID` project. At the date at which this vignette is written, `lydemapr` contains data up to year 2022. 
 
 We load this dataset that contains all the occurrences of the spotted lanternfly, and take a look at it. 
-```{r load data}
+```{r load data, echo = FALSE}
 
 slf <- read.csv(file.path(here::here(), "data", "lyde_data_v2", "lyde.csv"))
 slf %<>% select(bio_year, latitude, longitude, lyde_established) 
-tibble::tibble(slf)
+head(slf)
 ```
 
 The dataset contains 831,039 rows, each corresponding to a SLF survey at a specific date and location. The columns that we will using are:  
@@ -72,12 +74,12 @@ grid_data <- slf %>%
   dplyr::summarise(established = any(established)) %>% 
   ungroup()
 
-tibble::tibble(grid_data)
+head(grid_data)
 ```
 
 The dataset now has 123,532 rows, corresponding to `r length(unique(grid_data$latitude))` x `r length(unique(grid_data$longitude))` cells. Let's look at these data on a map.
 
-```{r create US map, fig.height = 10, fig.width = 10, messages = FALSE, warnings = FALSE}
+```{r create US map, fig.height = 7, fig.width = 10, messages = FALSE, warnings = FALSE, echo = FALSE}
 
 # get a simple feature object for states
 states <- sf::st_as_sf(maps::map("state", plot = FALSE, fill = TRUE)) %>% 
@@ -98,7 +100,8 @@ ggplot(data = states) +
 Cells were predominantly surveyed in the Eastern US, but there are also cells surveyed in other parts of the US, starting in 2019. Positive cells (established SLF) are only in the Eastern US, so maps will be zoomed in on the Eastern US from here. 
 
 Every year, there is a large number of cells surveyed with positive (SLF established) or negative results (SLF not established). A zoomed-in map allows to see the cell grid.
-```{r show grid map, fig.height = 5, fig.width = 5}
+
+```{r show grid map, fig.height = 5, fig.width = 5, echo = FALSE}
 
 #| fig.alt: >
 #|   A zoomed-in map showing that survey points are aligned on a grid
@@ -144,11 +147,13 @@ grid_data %<>%
 # the distance is obtained in meters, and we divide it by 1000 to obtain kilometers 
 # given the scale of this invasion.
 
-summary(grid_data)
+head(grid_data)
+```
 
+```{r save grid data, echo = FALSE}
 # save this dataset
 write.csv(grid_data, file.path(here::here(), "exported-data", "grid_data.csv"), row.names = F)
-```
+``` 
 
 The dataset is now ready for the jump analysis.
 
@@ -165,7 +170,7 @@ A set of four successive functions will be run to separate cells where SLF is es
 
 Considering that the expansion of the invasion is heterogeneous in space, the jump analyses requires the invasion range to be divided into sectors with the introduction site as the origin. The first function, `attribute_sectors()` attributes a sector number to each cell of the dataset, to be used in the jump analysis. Here, we divide the invasion range into 16 sectors. See vignette #2 "Decreasing calculation time" to learn how changing the number of sectors may make your analysis faster.
 
-```{r discover attribute sectors, fig.height = 10, fig.width = 10}
+```{r discover attribute sectors}
 
 grid_data_sectors <- jumpID::attribute_sectors(dataset = grid_data, 
                                                  # dataset to be explored
@@ -174,8 +179,9 @@ grid_data_sectors <- jumpID::attribute_sectors(dataset = grid_data,
                              centroid = c(-75.675340, 40.415240)
                              # vector containing the centroid coordinates as long/lat
                              ) 
-                             
+```                              
 
+```{r map attribute sectors, echo = FALSE, fig.height = 7, fig.width = 10}
 # Map results
 #| fig.alt: >
 #|   A map showing all survey points colored by sector
@@ -200,7 +206,7 @@ The function runs independently for each sector. It is considered that populatio
 The input dataset is the output of attribute_sectors(). The `gap_size` parameter defines the minimal distance between two consecutive points that marks a discontinuity in the SLF distribution, in km. In this example, it is set to 15 km.   
 If the option "negatives" is set to TRUE (default), the function will check that there are negative surveys in the discontinuity, so that the absence of SLF established is not due to an absence of surveys in the area.
 
-```{r discover find_thresholds, fig.height = 10, fig.width = 10}
+```{r discover find_thresholds}
 gap_size = 15 
 
 Results_thresholds <- jumpID::find_thresholds(dataset = grid_data_sectors, 
@@ -212,7 +218,9 @@ Results_thresholds <- jumpID::find_thresholds(dataset = grid_data_sectors,
 # diffusive spread. Will be completed in find_secDiff()
 #- Results_thresholds$potJumps, a data frame of potential jumps. Will be
 # pruned in find_jumps()
+``` 
 
+```{r map find thresholds, echo = FALSE, fig.height = 7, fig.width = 10}
 # Make a single object for the map
 thresholds_map <- dplyr::bind_rows(Results_thresholds$preDist %>% 
                                      dplyr::mutate(Type = "Diffusion threshold"),
@@ -241,7 +249,7 @@ On this map, blue points indicate the invasion front identified by `find_thresho
 ## c- find_jumps()
 The function `find_jumps()` prunes the list of potential jumps of cells that are less than <gap size> from a positive cell from a previous year, as the species likely spread from this other cell. The final list of jumps is obtained in the object `Jumps`.
 
-```{r discover find_jumps(), fig.height = 10, fig.width = 10}
+```{r discover find_jumps()}
 
 Results_jumps <- jumpID::find_jumps(grid_data = grid_data, 
                        potJumps = Results_thresholds$potJumps,
@@ -252,7 +260,9 @@ Results_jumps <- jumpID::find_jumps(grid_data = grid_data,
 #- Results_jumps$diffusers, a data frame of positive cells stemming from diffusive spread
 #- Results_jumps$potDiffusion, a data frame of remaining cells, containing a mix of 
 # secondary diffusion and additional threshold points. Will be pruned in find_secDiff()
+``` 
 
+```{r map find jumps, echo = FALSE, fig.height = 7, fig.width = 10}
 # Make a single object for the map
 jumps_map <- dplyr::bind_rows(Results_jumps$diffusers %>% 
                                 mutate(Type = "Diffusion"),
@@ -283,7 +293,7 @@ The analysis may be stopped here if only dispersal jumps are of biological inter
 ## d- find_secDiff()
 Cells that were discarded from the jump list are either additional threshold points or secondary diffusion from a previous jump. `find_secDiff()` attributes them to the correct category by checking whether they are close from a previous jump, or a diffusion point.
 
-```{r explore find_secDiff, fig.height = 10, fig.width = 10}
+```{r explore find_secDiff}
 
 Results_secDiff <- jumpID::find_secDiff(potDiffusion = Results_jumps$potDiffusion,
                                 Jumps = Results_jumps$Jumps,
@@ -295,7 +305,9 @@ Results_secDiff <- jumpID::find_secDiff(potDiffusion = Results_jumps$potDiffusio
 #- Results_secDiff$secDiff, a data frame of all cells that are secondary diffusion 
 # from a previous jump
 #- Results_secDiff$Dist, a data frame of all extreme points on the invasion front (thresholds)
+``` 
 
+```{r map find secDiff, echo = FALSE, fig.height = 7, fig.width = 10}
 # We extract all diffusion points from the original dataset (points that are neither jumps or secondary diffusion)
 diffusion <- dplyr::setdiff(grid_data %>% filter(established == T),
                      Results_jumps$Jumps %>% select(-DistToSLF)) %>% 
@@ -340,7 +352,9 @@ jumps_wrapper <- jumpID::find_jumps_wrapper(dataset = grid_data,
                                               centroid = c(-75.675340, 40.415240),
                                               gap_size = 15,
                                               negatives = T)
+```
 
+```{r save all results, echo = FALSE}
 # save resulting objects 
 write.csv(jumps_wrapper$Dist, 
           file.path(here::here(), "exported-data", "thresholds.csv"), row.names = F)
@@ -353,7 +367,8 @@ write.csv(jumps_wrapper$secDiff,
 ```
 
 We plot the results on a map.
-```{r map results, fig.height = 10, fig.width = 10}
+
+```{r map results, fig.height = 7, fig.width = 10, echo = FALSE}
 
 # Make a single object for the map
 jumps_wrapper_map <- dplyr::bind_rows(jumps_wrapper$diffusion %>% 
@@ -387,7 +402,7 @@ ggplot(data = states) +
 
 # 5. Rarefy jump clusters
 
-```{r load data if necessary}
+```{r load data if necessary, echo = FALSE}
 
 Jumps <- read.csv(file.path(here::here(), "exported-data", "jumps.csv"))
 ``` 
@@ -397,15 +412,22 @@ Some jumps were clustered in the same area. Jump clusters may stem from independ
 First, we delineate these jump clusters as jumps located less than the gap size from each other. Check how many points there are per jump cluster.
 
 ## a- group_jumps()
-```{r run group_jumps function to define groups, fig.height = 5, fig.width = 5}
+```{r run group_jumps function to define groups}
 
 Jump_groups <- jumpID::group_jumps(Jumps, gap_size = 15)
+```
 
-Groups <- Jump_groups %>% 
+```{r plot group_jumps, echo = FALSE, fig.height = 3, fig.width = 5}
+Groups <- Jump_groups %>%
+  dplyr::group_by(year, Group) %>%
+  dplyr::summarise(Nb = n()) %>%
+  dplyr::arrange(-Nb) %>%
+  dplyr::filter(Nb > 1)
+
+Jump_groups %>% 
   dplyr::group_by(year, Group) %>% 
   dplyr::summarise(Nb = n()) %>% 
-  dplyr::arrange(-Nb) %>% 
-  dplyr::filter(Nb > 1)
+  group_by(year) %>% summarise(mean_njumps = mean(Nb))
 
 #| fig.alt: >
 #|   A barplot showing the number of jump clusters identified per year
@@ -418,15 +440,19 @@ ggplot(Groups, aes(x = as.factor(year), y = Nb)) +
 ## b- rarefy_groups()
 We summarize each jump cluster by summarizing each of them by their most central point.
 
-```{r run rarify_groups function on all datasets, fig.height = 10, fig.width = 10}
+```{r run rarify_groups function on all datasets}
 
 Jump_clusters <- jumpID::rarefy_groups(Jump_groups) %>%
   dplyr::mutate(Rarefied = TRUE)
+```
 
+```{r save jump clusters, echo = FALSE}
 write.csv(Jump_clusters, 
           file.path(here::here(), "exported-data", "jump_clusters.csv"), 
           row.names = F)
+``` 
 
+```{r map jum clusters, echo = FALSE, fig.height = 7, fig.width = 10}
 
 # Map these groups and the rarefied points
 #| fig.alt: >

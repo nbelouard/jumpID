@@ -1,20 +1,24 @@
 ---
-title: "#1B Creating the figures associated with the jump analysis"
-author: 
-- Nadege Belouard^[iEco lab at Temple University, Ecobio lab at the University of Rennes, nadege.belouard@gmail.com]
+title: '#1B Creating the figures associated with the jump analysis'
+author:
+- Nadege Belouard^[iEco lab at Temple University, Ecobio lab at the University of
+  Rennes, nadege.belouard@gmail.com]
 - Isabella G. Smith^[iEco lab at Temple University]
 date: "`r Sys.Date()`"
 output:
+  pdf_document:
+    toc: true
+    toc_depth: '3'
   html_document:
-    toc: TRUE
-    toc_float: TRUE
+    toc: true
+    toc_float: true
     toc_depth: 3
 params:
-  display: FALSE
-  run: TRUE
-  loadfiles: FALSE
-  savefiles: TRUE
-editor_options: 
+  display: false
+  run: true
+  loadfiles: false
+  savefiles: true
+editor_options:
   chunk_output_type: console
 ---
 
@@ -22,7 +26,7 @@ editor_options:
 
 This vignette computes all the figures included in the manuscript that is associated with the `jumpID` package. This vignette requires loading data frames generated in the first vignette of this package.  
 
-```{r load packages, messages = F, warning = F}
+```{r load packages, messages = F, warning = F, include = FALSE}
 
 library(dplyr)
 library(magrittr)
@@ -45,9 +49,7 @@ diffusion <- read.csv(file.path(here::here(), "exported-data", "diffusion.csv"))
 secDiffusion <- read.csv(here::here("exported-data", "secdiffusion.csv"))
 ```
 
-Prepare the states background map   
-
-```{r create an object for the US background map, messages = FALSE, warnings = FALSE}
+```{r create an object for the US background map, messages = FALSE, warnings = FALSE, echo = FALSE}
 
 # get a simple feature objects for states 
 states <- sf::st_as_sf(maps::map("state", plot = FALSE, fill = TRUE)) %>%
@@ -60,7 +62,8 @@ states <- sf::st_as_sf(maps::map("state", plot = FALSE, fill = TRUE)) %>%
 
 ## 2A: jump map 
 Map the position of jumps and identify jump clusters per year  
-```{r jump map, fig.width = 8, fig.height = 8}
+
+```{r jump map, fig.width = 8, fig.height = 6, echo = FALSE}
 
 map_rarefied <- ggplot(data = states) +
   geom_sf(data = states, fill = "white") +
@@ -95,7 +98,8 @@ map_rarefied
 
 ## 2B: number of jumps per year bar plot
 Count how many jumps there are per year  
-```{r number of jumps per year bar plot, fig.height = 2.5, fig.width = 4}
+
+```{r number of jumps per year, include = FALSE}
 
 # add the type of data to each dataset
 Jump_clusters %<>% mutate(Type = "Rarefied jumps")
@@ -116,7 +120,9 @@ Jumps_year <- Jumps %>%
 
 # bind the two tables
 Jumps_total <- bind_rows(Clusters_year, Jumps_year %>% select(year, Type, n))
+```
 
+```{r number of jumps bar plot, fig.height = 2.5, fig.width = 4, echo = FALSE}
 
 jumps_plot <- ggplot() +
   geom_bar(data = Jumps_total, 
@@ -138,7 +144,8 @@ jumps_plot
 
 ## 2C: distance of jumps box plot
 calculate the distance between the invasion front and jumps every year
-```{r dist to front per year, fig.height = 2.5, fig.width = 4}
+
+```{r dist to front per year, fig.height = 2.5, fig.width = 4, echo = FALSE}
 
 # 1. select all diffusion points for the rarefied jump dataset
 diffusion_rarefied <- setdiff(grid_data %>% filter(established == T), 
@@ -174,7 +181,8 @@ MeanDist_jump
 ```
 
 ## 2D Evolution of jump distances
-```{r test evolution jump distances}
+
+```{r test evolution jump distances, echo = FALSE, fig.height = 2.5, fig.width = 4}
 
 Distrib_jumpDist <- ggplot(Jump_clusters, aes(x = DistToFront)) +
   geom_histogram(aes(fill = as.factor(-year)), binwidth = 10, show.legend = F) +
@@ -193,13 +201,13 @@ Linear model for statistical test
 # generate model
 model <- lm(log(DistToFront) ~ year, data = Jump_clusters)
 # look at residuals
-shapiro.test(model$residuals)
+hist(model$residuals)
 # look at results
 summary(model)
 ```
 
 ## Assemble figure 2ABCD
-```{r figure 1 complete, fig.height = 10, fig.width = 10}
+```{r figure 1 complete, echo = FALSE, fig.height = 10, fig.width = 10}
 
 fig2 <- ggdraw() +
   draw_plot(map_rarefied, x = 0, y = .33, width = 1, height = .66) +
@@ -221,139 +229,12 @@ ggsave(file.path(here::here(), "figures", "2. jump_description.jpg"),
 
 
 
-# Figure 3: secondary diffusion
-## 3A: Map
-Map the points identified as secondary diffusion around dispersal jumps.  
-```{r secondary diffusion map, fig.height = 8, fig.width = 15}
 
-secDiff_map <- ggplot() +
-  geom_point(data = grid_data %>% filter(established == TRUE), 
-             aes(x = longitude, y = latitude), 
-             col = "lightgrey") +
-  geom_point(data = secDiffusion %>% arrange(desc(year)),  
-             aes(x = longitude, y = latitude,
-                 col = as.factor(year)), 
-             stroke = 2, size = 4) +
-  geom_point(data = Jump_clusters %>% arrange(desc(year)),  
-             aes(x = longitude, y = latitude, col = as.factor(year), fill = as.factor(year)),
-             color = "black",
-              shape = 21, 
-             stroke = 0.5, size = 3.5) +
-  scale_color_manual(values = c( "#f4c957", "#94e65f", "#59a68e", "#27679e")) +
-  scale_fill_manual(values = c( "#d53e4f", "#fc8d59", "#f4c957", "#94e65f", "#59a68e", "#27679e")) +
-  labs(x = "Longitude", y = "Latitude") +
-  theme(legend.position = "right", text = element_text(size = 10),
-        panel.background = element_rect(fill = "white"),
-        legend.key = element_rect(fill = "white"),
-        legend.title = element_text(size = 20),
-        legend.text = element_text(size = 16),
-        legend.key.size = unit(2, "lines"),
-        axis.title = element_text(size = 18),
-        axis.text = element_text(size = 12)) +
-    geom_sf(data = states, alpha = 0) +
-    coord_sf(xlim = c(-85.25, -71), ylim = c(36.5, 43)) +
-  guides(colour = guide_legend(paste0("Secondary", "\n", "Diffusion")), 
-         fill = guide_legend("Rarefied jumps"))
-
-#| fig.alt: >
-#|   Map showing the location of secondary diffusion around dispersal jumps, colored by year
-secDiff_map
-```
-
-
-## 3B: Secondary diffusion Bar Plot
-Count how many jumps were followed by secondary diffusion  
-```{r calculating jumps followed by secDiff, fig.height = 5, fig.width = 8}
-
-# select jumps for which we have data for year n+1
-Jumps_2021 <- Jumps %>% filter(year %in% c(2014:2021)) %>% 
-  mutate(secDiff = NA)
-
-# determine if they are followed by secondary diffusion, or enveloped by diffusion
-for (jump in 1:length(Jumps_2021$DistToIntro)){ # for each jump
-  # is this jump within 1 km of any diffusion point the year after? ie. enveloped by diffusion
-  testDiff <- diffusion %>% filter(year == Jumps_2021$year[jump]+1)
-  pairwise_dist <- geosphere::distGeo(testDiff[,c('longitude','latitude')], Jumps_2021[jump,c('longitude','latitude')])/1000
-  
-  if (min(pairwise_dist) < 1){ Jumps_2021$secDiff[jump] = "enveloped" 
-  } else {
-  # is there secondary diffusion within 15 km of this jump the year after?
-  # calculate pairwise distance with secDiff the year after
-    testSecDiff <- secDiffusion %>% filter(year == Jumps_2021$year[jump]+1)
-    if (dim(testSecDiff)[1] > 0){
-      pairwise_dist <- geosphere::distGeo(testSecDiff[,c('longitude','latitude')], Jumps_2021[jump,c('longitude','latitude')])/1000
-      Jumps_2021$secDiff[jump] = ifelse(min(pairwise_dist) < 15, "yes", "no")
-    } else { Jumps_2021$secDiff[jump] = "no" } # if there is no secDiff
-  }
-}
-
-# count the number of jumps in each category (yes, no, enveloped)
-Jumps_secDiff <- Jumps_2021 %>%
-  group_by(year, secDiff) %>%
-  summarise(count = n()) %>%
-  ungroup()
-
-# order this factor
-Jumps_secDiff$secDiff <- factor(Jumps_secDiff$secDiff, 
-                                levels = c("enveloped", "no", "yes"))
-
-#Bar Plot
-Jumps_secDiff_plot <- ggplot() +
-  geom_bar(data = Jumps_secDiff,
-           aes(x = as.factor(year),
-               y = count,
-               group = secDiff,
-               fill = as.factor(year),
-               col = as.factor(year), 
-               alpha = secDiff),
-           lwd = .25,
-           stat = "identity") +
-  scale_fill_manual(values = c("#d53e4f", "#fc8d59", "#f4c957", "#94e65f", 
-                               "#59a68e", "#27679e"), guide = "none") +
-  scale_color_manual(values = c("#d53e4f", "#fc8d59", "#f4c957", "#94e65f", 
-                                "#59a68e", "#27679e"), guide = "none") +
-  scale_alpha_manual(values = c(0.3, 0, 1)) +
-  theme_classic() +
-  xlab("Year of Jump") +
-  ylab("Number of Jumps") +
-  guides(alpha = guide_legend(
-    paste0("Sec. diffusion after jump"),
-    override.aes = list(fill = "black", color = "black", linetype = 1, shape = 21))) +
-  theme(legend.title = element_text(size = 20),
-        legend.text = element_text(size = 16),
-        legend.key.size = unit(2, "lines"),
-        axis.title = element_text(size = 18),
-        axis.text = element_text(size = 12))
-
-#| fig.alt: >
-#|   Barplot with the number of jumps followed by secondary diffusion or enveloped, colored by year
-Jumps_secDiff_plot
-```
-
-## Assemble figure 3AB
-```{r combine secDiff graphs, fig.height = 13, fig.width = 13}
-secDiff_graphs_combined <- cowplot::ggdraw() +
-  cowplot::draw_plot(secDiff_map, 0, .33, 1, 0.66) +
-  cowplot::draw_plot(Jumps_secDiff_plot, 0, 0, 1, 0.33) +
-  cowplot::draw_plot_label(c("(a)", "(b)"), c(0.06, 0.06), c(0.90, 0.33), size = 25) 
-
-#| fig.alt: >
-#|   Figure combining previous figures A and B
-secDiff_graphs_combined
-
-ggsave(file.path(here::here(), "figures", "3. secDiff_combined.jpeg"),
-       secDiff_graphs_combined, height = 13, width = 13)
-
-```
-
-
-
-
-# Figure 4: Invasion radius
+# Figure 3: Invasion radius
 
 To estimate the spread of the SLF, we extract for each year the radius of the invasion in each sector. We can look at how the radius of the invasion increases over time, when differentiating diffusive spread and jump dispersal.   
 
-```{r radius box plot, fig.height = 6, fig.width = 10}
+```{r radius box plot, fig.height = 6, fig.width = 10, include = FALSE}
 
 sectors_used = 16
 
@@ -427,7 +308,7 @@ invasionRadius <- ggplot(data = radiusData,
 #|   Boxplot showing the yearly invasion radius when considering diffusion only or all spread
 invasionRadius
 
-ggsave(file.path(here::here(), "figures", "4. invasionRadius.jpeg"), 
+ggsave(file.path(here::here(), "figures", "3. invasionRadius.jpeg"), 
        invasionRadius, height = 6, width = 10)
 ```
 
@@ -443,12 +324,14 @@ anova(model)
 ``` 
 
 Calculate the yearly increase in invasion radius
-```{r increase in radius} 
-# calculate the mean radius per year
+```{r mean radius, include = FALSE} 
+
 meanRadius <- radiusData %>% group_by(Type, year) %>% 
   summarise(mean = mean(maxDistToIntro)) %>% 
   ungroup()
+```
 
+```{r yearly increase in invasion radius}
 # All spread:
 meanRadius %>% filter(Type == "All spread") %>% 
   mutate(radiusIncrease = c(NA, diff(mean))) %>% 
@@ -464,13 +347,12 @@ meanRadius %>% filter(Type == "Invasion front") %>%
 
 
 
-
-
 # Supplementary figures
 
 ## Figure S1: Map all points
 Facet A: Overview of all SLF surveys   
-```{r map data, fig.width = 6, fig.height = 6}
+
+```{r map data, fig.width = 6, fig.height = 5, echo = FALSE}
 
 # plot US map
 mapUS <- ggplot(data = states) +
@@ -493,7 +375,8 @@ ggsave(file.path(here::here(), "figures", "S1A. points_all.jpg"),
 ```
 
 Facet B: Zoomed map on established SLF  
-```{r zoomed map S1, fig.width = 6, fig.height = 6}
+
+```{r zoomed map S1, fig.width = 6, fig.height = 5, echo = FALSE}
 
 # create a variable for a meaningful legend
 grid_data %<>% mutate(SLF = ifelse(established == T, "Present", "Absent"))
@@ -523,7 +406,7 @@ ggsave(file.path(here::here(), "figures", "S1B. zoomed_points.jpg"),
 
 ## Figure S2: Visualizing Jumps, Thresholds, and SecDiff
 Visualize all results, faceted by year  
-```{r facet all results per year, fig.height = 12, fig.width = 20}
+```{r facet all results per year, fig.height = 12, fig.width = 20, echo = FALSE}
 
 # Make a single object for the map
 jumps_wrapper_map <- dplyr::bind_rows(grid_data %>% filter(established == F) %>%
@@ -562,10 +445,137 @@ ggsave(file.path(here::here(), "figures", "S2. faceted_results.jpeg"),
 ```
 
 
+# Figure S3: secondary diffusion
+## S3A: Map
+Map the points identified as secondary diffusion around dispersal jumps.  
+```{r secondary diffusion map, fig.height = 8, fig.width = 15, echo = FALSE}
 
-## Figure S3: Sampling effort
+secDiff_map <- ggplot() +
+  geom_point(data = grid_data %>% filter(established == TRUE), 
+             aes(x = longitude, y = latitude), 
+             col = "lightgrey") +
+  geom_point(data = secDiffusion %>% arrange(desc(year)),  
+             aes(x = longitude, y = latitude,
+                 col = as.factor(year)), 
+             stroke = 2, size = 4) +
+  geom_point(data = Jump_clusters %>% arrange(desc(year)),  
+             aes(x = longitude, y = latitude, col = as.factor(year), fill = as.factor(year)),
+             color = "black",
+              shape = 21, 
+             stroke = 0.5, size = 3.5) +
+  scale_color_manual(values = c( "#f4c957", "#94e65f", "#59a68e", "#27679e")) +
+  scale_fill_manual(values = c( "#d53e4f", "#fc8d59", "#f4c957", "#94e65f", "#59a68e", "#27679e")) +
+  labs(x = "Longitude", y = "Latitude") +
+  theme(legend.position = "right", text = element_text(size = 10),
+        panel.background = element_rect(fill = "white"),
+        legend.key = element_rect(fill = "white"),
+        legend.title = element_text(size = 20),
+        legend.text = element_text(size = 16),
+        legend.key.size = unit(2, "lines"),
+        axis.title = element_text(size = 18),
+        axis.text = element_text(size = 12)) +
+    geom_sf(data = states, alpha = 0) +
+    coord_sf(xlim = c(-85.25, -71), ylim = c(36.5, 43)) +
+  guides(colour = guide_legend(paste0("Secondary", "\n", "Diffusion")), 
+         fill = guide_legend("Rarefied jumps"))
+
+#| fig.alt: >
+#|   Map showing the location of secondary diffusion around dispersal jumps, colored by year
+secDiff_map
+```
+
+
+## S3B: Secondary diffusion Bar Plot
+Count how many jumps were followed by secondary diffusion  
+```{r calculating jumps followed by secDiff, include = FALSE}
+
+# select jumps for which we have data for year n+1
+Jumps_2021 <- Jumps %>% filter(year %in% c(2014:2021)) %>% 
+  mutate(secDiff = NA)
+
+# determine if they are followed by secondary diffusion, or enveloped by diffusion
+for (jump in 1:length(Jumps_2021$DistToIntro)){ # for each jump
+  # is this jump within 1 km of any diffusion point the year after? ie. enveloped by diffusion
+  testDiff <- diffusion %>% filter(year == Jumps_2021$year[jump]+1)
+  pairwise_dist <- geosphere::distGeo(testDiff[,c('longitude','latitude')], Jumps_2021[jump,c('longitude','latitude')])/1000
+  
+  if (min(pairwise_dist) < 1){ Jumps_2021$secDiff[jump] = "enveloped" 
+  } else {
+  # is there secondary diffusion within 15 km of this jump the year after?
+  # calculate pairwise distance with secDiff the year after
+    testSecDiff <- secDiffusion %>% filter(year == Jumps_2021$year[jump]+1)
+    if (dim(testSecDiff)[1] > 0){
+      pairwise_dist <- geosphere::distGeo(testSecDiff[,c('longitude','latitude')], Jumps_2021[jump,c('longitude','latitude')])/1000
+      Jumps_2021$secDiff[jump] = ifelse(min(pairwise_dist) < 15, "yes", "no")
+    } else { Jumps_2021$secDiff[jump] = "no" } # if there is no secDiff
+  }
+}
+
+# count the number of jumps in each category (yes, no, enveloped)
+Jumps_secDiff <- Jumps_2021 %>%
+  group_by(year, secDiff) %>%
+  summarise(count = n()) %>%
+  ungroup()
+
+# order this factor
+Jumps_secDiff$secDiff <- factor(Jumps_secDiff$secDiff, 
+                                levels = c("enveloped", "no", "yes"))
+```
+
+```{r bar plot secDiff, fig.height = 5, fig.width = 8, echo = FALSE}
+#Bar Plot
+Jumps_secDiff_plot <- ggplot() +
+  geom_bar(data = Jumps_secDiff,
+           aes(x = as.factor(year),
+               y = count,
+               group = secDiff,
+               fill = as.factor(year),
+               col = as.factor(year), 
+               alpha = secDiff),
+           lwd = .25,
+           stat = "identity") +
+  scale_fill_manual(values = c("#d53e4f", "#fc8d59", "#f4c957", "#94e65f", 
+                               "#59a68e", "#27679e"), guide = "none") +
+  scale_color_manual(values = c("#d53e4f", "#fc8d59", "#f4c957", "#94e65f", 
+                                "#59a68e", "#27679e"), guide = "none") +
+  scale_alpha_manual(values = c(0.3, 0, 1)) +
+  theme_classic() +
+  xlab("Year of Jump") +
+  ylab("Number of Jumps") +
+  guides(alpha = guide_legend(
+    paste0("Sec. diffusion after jump"),
+    override.aes = list(fill = "black", color = "black", linetype = 1, shape = 21))) +
+  theme(legend.title = element_text(size = 20),
+        legend.text = element_text(size = 16),
+        legend.key.size = unit(2, "lines"),
+        axis.title = element_text(size = 18),
+        axis.text = element_text(size = 12))
+
+#| fig.alt: >
+#|   Barplot with the number of jumps followed by secondary diffusion or enveloped, colored by year
+Jumps_secDiff_plot
+```
+
+## Assemble figure S3AB
+```{r combine secDiff graphs, fig.height = 13, fig.width = 13, echo = FALSE}
+secDiff_graphs_combined <- cowplot::ggdraw() +
+  cowplot::draw_plot(secDiff_map, 0, .33, 1, 0.66) +
+  cowplot::draw_plot(Jumps_secDiff_plot, 0, 0, 1, 0.33) +
+  cowplot::draw_plot_label(c("(a)", "(b)"), c(0.06, 0.06), c(0.90, 0.33), size = 25) 
+
+#| fig.alt: >
+#|   Figure combining previous figures A and B
+secDiff_graphs_combined
+
+ggsave(file.path(here::here(), "figures", "S3. secDiff_combined.jpeg"),
+       secDiff_graphs_combined, height = 13, width = 13)
+
+```
+
+
+## Figure S4: Sampling effort
 Show the evolution of the sampling effort and jump occurrences over time  
-```{r figure sampling effort, fig.width = 7, fig.height = 5}
+```{r figure sampling effort, fig.width = 7, fig.height = 5, echo = FALSE}
 
 slf %<>% filter(!is.na(lyde_established))
 
@@ -607,7 +617,7 @@ effort_plot <- ggplot() +
 #|   Plot showing the evolution of the number of SLF surveys per year
 effort_plot
 
-ggsave(file.path(here::here(), "figures", "S3. number of surveys.jpg"), 
+ggsave(file.path(here::here(), "figures", "S4. number of surveys.jpg"), 
        effort_plot, width = 7, height = 5)
 
 ```
