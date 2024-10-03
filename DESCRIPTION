@@ -8,7 +8,7 @@ Maintainer: Nadège Belouard <nadege.belouard@gmail.com>
 URL: https://nbelouard.github.io/jumpID/
 Description: jumpID finds dispersal jumps and secondary diffusion from occurrence data.
 BugReports: https://github.com/nbelouard/jumpID/issues
-License: use_mit_license()
+License: MIT + file LICENSE
 Imports: 
   DescTools,
   dplyr,

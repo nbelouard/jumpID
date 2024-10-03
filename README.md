@@ -48,6 +48,18 @@ library(jumpID)
 The functions are now ready to use, and the help file is accessible by typing ?function_name.
 
 
-## Citation
+## License
+This project is licensed under a Modified MIT License. You are free to use, copy, modify
+and distribute the software for non-commercial purposes, as long as the following conditions 
+are met:
+1. Non-Commercial Use Only: The software cannot be used for any commercial purposes
+without prior written permission
+2. Citation Requirement: Any use of this software, whether in part or in full, must
+include proper citation of the original work.
+For more information, see the LICENSE file.
 
-N. Belouard, S. De Bona, M.R. Helmus,  I.G. Smith, J.E. Behm, 2024. Identifying jump dispersal locations from occurrence data on invasive species spread: the case of the spotted lanternfly *Lycorma delicatula*. https://ieco-lab.github.io/jumpID 
+## How to cite this work
+If you use this software, please cite it as follows:
+N. Belouard, S. De Bona, M.R. Helmus,  I.G. Smith, J.E. Behm, 2024. Identifying jump 
+dispersal locations from occurrence data on invasive species spread: the case of the 
+spotted lanternfly *Lycorma delicatula*. https://ieco-lab.github.io/jumpID 
